@@ -13,6 +13,6 @@ describe("safeNext", () => {
     expect(safeNext("/admin/users")).toBe("/admin/users");
     expect(safeNext("/auth/update-password")).toBe("/auth/update-password");
   });
-  it.each([null, undefined, "", "https://evil.com", "//evil.com", "/\\evil.com", "admin"])(
+  it.each([null, undefined, "", "https://evil.com", "//evil.com", "/\\evil.com", "admin", "/\t/evil.com", "/\n/evil.com", "\t//evil.com", "/ /evil.com"])(
     "falls back to /admin for %s", (v) => expect(safeNext(v)).toBe("/admin"));
 });

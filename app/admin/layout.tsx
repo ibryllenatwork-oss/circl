@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import { Sidebar } from "@/components/admin/sidebar";
+import { AdminGate } from "@/components/admin/admin-gate";
 
 export default function AdminLayout({
   children,
@@ -8,7 +10,11 @@ export default function AdminLayout({
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
       <Sidebar />
-      <main className="flex-1 p-6">{children}</main>
+      <main className="flex-1 p-6">
+        <Suspense>
+          <AdminGate>{children}</AdminGate>
+        </Suspense>
+      </main>
     </div>
   );
 }
