@@ -7,7 +7,9 @@ import { SESSION_EXPIRED_MESSAGE, isUuid } from "@/lib/validation/action";
 import {
   DOC_TABLE,
   DOC_TYPES_BY_OWNER,
+  isDocumentPath,
   isOwner,
+  isPhotoPath,
   safeFileName,
   storagePath,
   validateUpload,
@@ -74,9 +76,7 @@ export async function recordDocument(
   },
 ): Promise<Result> {
   if (!isOwner(owner) || !isUuid(ownerId) || !meta) return { ok: false, error: "Upload not allowed." };
-  if (typeof meta.path !== "string" || !meta.path.startsWith(`${owner}/${ownerId}/`) || meta.path.includes("/photo-")) {
-    return { ok: false, error: "Upload not allowed." };
-  }
+  if (!isDocumentPath(owner, ownerId, meta.path)) return { ok: false, error: "Upload not allowed." };
   if (!DOC_TYPES_BY_OWNER[owner].includes(meta.doc_type)) return { ok: false, error: "Choose a document type." };
   if (meta.expires_on && !ISO_DATE.test(meta.expires_on)) return { ok: false, error: "Enter a valid expiry date." };
 
@@ -132,10 +132,11 @@ export async function deleteDocument(owner: Owner, docId: string): Promise<Resul
       if (error) throw error;
       if (!data) return { ok: false, error: "Document not found." };
       const row = data as unknown as Record<string, string>;
-      const { error: removeError } = await db.storage.from(DOCUMENTS_BUCKET).remove([row.file_path]);
-      if (removeError) throw removeError;
+      // Row first: if this fails nothing is lost. A leftover file is the cheaper failure.
       const { error: deleteError } = await db.from(table).delete().eq("id", docId);
       if (deleteError) throw deleteError;
+      const { error: removeError } = await db.storage.from(DOCUMENTS_BUCKET).remove([row.file_path]);
+      if (removeError) console.error("document file not removed", row.file_path, removeError);
       revalidatePath(`/admin/${owner}/${row[fk]}`);
       return { ok: true };
     });
@@ -146,7 +147,7 @@ export async function deleteDocument(owner: Owner, docId: string): Promise<Resul
 
 /** Saves an uploaded photo as the employee's photo and removes the previous one. */
 export async function setEmployeePhoto(employeeId: string, path: string): Promise<Result> {
-  if (!isUuid(employeeId) || typeof path !== "string" || !path.startsWith(`employees/${employeeId}/photo-`)) {
+  if (!isUuid(employeeId) || !isPhotoPath(employeeId, path)) {
     return { ok: false, error: "Upload not allowed." };
   }
   try {

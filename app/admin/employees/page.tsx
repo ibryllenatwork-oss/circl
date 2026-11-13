@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { ListFilters, Pagination, asList } from "@/components/admin/list-controls";
+import { pageNumber } from "@/lib/validation/action";
 import { StatusBadge, DevBadge } from "@/components/admin/badges";
 import { listEmployees, PAGE_SIZE, parseStatuses } from "@/lib/employees/queries";
 import { EMPLOYEE_STATUSES } from "@/lib/employees/labels";
@@ -15,7 +16,7 @@ async function EmployeeTable({ searchParams }: { searchParams: SearchParams }) {
   const q = asList(params.q)[0] ?? "";
   const statuses = parseStatuses(asList(params.status).join(","));
   const devOnly = asList(params.dev)[0] === "1";
-  const page = Number(asList(params.page)[0]) || 1;
+  const page = pageNumber(asList(params.page)[0]);
   const { rows, total } = await listEmployees({ q, statuses, devOnly, page });
 
   return (

@@ -59,9 +59,10 @@ export async function deleteClient(id: string, confirmText: string): Promise<For
       if (typeof confirmText !== "string" || confirmText.trim().toLowerCase() !== data.company_name.trim().toLowerCase()) {
         return { ok: false, error: `Type ${data.company_name} to confirm.` };
       }
-      await removeFolder(db, `clients/${id}`);
+      // Row first: if it fails, the files are untouched. Leftover files are the cheaper failure.
       const { error: deleteError } = await db.from("clients").delete().eq("id", id);
       if (deleteError) throw deleteError;
+      await removeFolder(db, `clients/${id}`).catch((e) => console.error("client files not removed", id, e));
       return null;
     });
     if (result) return result;

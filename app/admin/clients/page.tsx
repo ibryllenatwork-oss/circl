@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { ListFilters, Pagination, asList } from "@/components/admin/list-controls";
+import { pageNumber } from "@/lib/validation/action";
 import { DevBadge, StatusBadge } from "@/components/admin/badges";
 import { CLIENT_PAGE_SIZE, listClients, parseClientStatuses } from "@/lib/clients/queries";
 import { CLIENT_STATUSES } from "@/lib/clients/labels";
@@ -15,7 +16,7 @@ async function ClientTable({ searchParams }: { searchParams: SearchParams }) {
   const q = asList(params.q)[0] ?? "";
   const statuses = parseClientStatuses(asList(params.status).join(","));
   const devOnly = asList(params.dev)[0] === "1";
-  const page = Number(asList(params.page)[0]) || 1;
+  const page = pageNumber(asList(params.page)[0]);
   const { rows, total } = await listClients({ q, statuses, devOnly, page });
 
   return (

@@ -63,12 +63,22 @@ export function DocumentsPanel({
     });
   };
 
-  const open = (id: string) =>
+  const open = (id: string) => {
+    // Open the tab during the click (Safari blocks window.open after an await), then point it at the file.
+    const tab = window.open("about:blank", "_blank");
     startTransition(async () => {
       const r = await documentDownloadUrl(owner, id);
-      if (r.ok) window.open(r.url, "_blank", "noopener");
-      else setError(r.error);
+      if (r.ok) {
+        if (tab) {
+          tab.opener = null;
+          tab.location.href = r.url;
+        } else window.location.href = r.url;
+      } else {
+        tab?.close();
+        setError(r.error);
+      }
     });
+  };
 
   const remove = (doc: PanelDocument) => {
     if (!confirm(`Delete ${doc.file_name ?? "this document"}? This can't be undone.`)) return;

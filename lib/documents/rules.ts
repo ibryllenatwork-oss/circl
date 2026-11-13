@@ -44,6 +44,25 @@ export function safeFileName(name: string): string {
   return `${stem || "file"}${ext ? `.${ext}` : ""}`;
 }
 
+const UUID_RE = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
+const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/**
+ * Exact shape of a document key we issued: `<owner>/<ownerId>/<uuid>-<safe-name>`.
+ * A prefix check isn't enough: Storage resolves `..`, so `employees/A/../../clients/C/...`
+ * would point at another owner's file.
+ */
+export function isDocumentPath(owner: Owner, ownerId: string, path: string): boolean {
+  const re = new RegExp(`^${escape(owner)}/${escape(ownerId)}/${UUID_RE}-[a-z0-9-]+(\\.[a-z0-9]{1,8})?$`);
+  return typeof path === "string" && re.test(path);
+}
+
+/** Exact shape of a photo key we issued: `employees/<id>/photo-<uuid>.<jpg|jpeg|png|webp>`. */
+export function isPhotoPath(employeeId: string, path: string): boolean {
+  const re = new RegExp(`^employees/${escape(employeeId)}/photo-${UUID_RE}\\.(jpe?g|png|webp)$`);
+  return typeof path === "string" && re.test(path);
+}
+
 export function storagePath(owner: Owner, ownerId: string, fileName: string): string {
   return `${owner}/${ownerId}/${crypto.randomUUID()}-${safeFileName(fileName)}`;
 }

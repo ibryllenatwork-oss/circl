@@ -48,7 +48,10 @@ export function EmployeePhoto({ employeeId, url, name }: { employeeId: string; u
         type="file"
         accept=".jpg,.jpeg,.png,.webp"
         className="hidden"
-        onChange={(e) => onPick(e.target.files?.[0])}
+        onChange={(e) => {
+          onPick(e.target.files?.[0]);
+          e.target.value = ""; // allow picking the same file again after an error
+        }}
       />
       {error && <span className="max-w-40 text-center text-xs text-red-500">{error}</span>}
     </div>

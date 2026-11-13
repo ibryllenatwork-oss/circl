@@ -1,5 +1,13 @@
 import { describe, it, expect } from "vitest";
-import { validateUpload, safeFileName, storagePath, isOwner, MAX_DOCUMENT_BYTES } from "./rules";
+import {
+  validateUpload,
+  safeFileName,
+  storagePath,
+  isOwner,
+  isDocumentPath,
+  isPhotoPath,
+  MAX_DOCUMENT_BYTES,
+} from "./rules";
 
 const MB = 1024 * 1024;
 
@@ -38,6 +46,27 @@ describe("storagePath", () => {
     const b = storagePath("employees", id, "NBI.pdf");
     expect(a).toMatch(new RegExp(`^employees/${id}/[0-9a-f-]{36}-nbi\\.pdf$`));
     expect(a).not.toBe(b);
+  });
+});
+
+describe("path checks", () => {
+  const A = "3f2b8c1e-9d4a-4c7e-8f00-1a2b3c4d5e6f";
+  const C = "11111111-2222-4333-8444-555555555555";
+  const U = "2b19d6a0-7170-4886-ac42-4b0c86b62309";
+  it("accepts the exact document format", () =>
+    expect(isDocumentPath("employees", A, `employees/${A}/${U}-nbi-clearance.pdf`)).toBe(true));
+  it.each([
+    `employees/${A}/../../clients/${C}/${U}-contract.pdf`,
+    `employees/${A}/${U}-x.pdf/../../${C}/${U}-y.pdf`,
+    `employees/${A}/photo-${U}.png`,
+    `employees/${C}/${U}-nbi.pdf`,
+    `clients/${A}/${U}-nbi.pdf`,
+    `employees/${A}/nested/${U}-a.pdf`,
+  ])("rejects %s", (p) => expect(isDocumentPath("employees", A, p)).toBe(false));
+  it("accepts only the exact photo format", () => {
+    expect(isPhotoPath(A, `employees/${A}/photo-${U}.webp`)).toBe(true);
+    expect(isPhotoPath(A, `employees/${A}/photo-${U}.pdf`)).toBe(false);
+    expect(isPhotoPath(A, `employees/${A}/photo-x/../../clients/${C}/${U}-a.png`)).toBe(false);
   });
 });
 

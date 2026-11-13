@@ -90,6 +90,8 @@ export async function listClients(opts: {
     if (opts.devOnly) query = query.eq("created_by", DEV_MANAGER.email);
 
     const { data, error, count } = await query;
+    // Page past the end (stale link, last row deleted): show an empty page, not an error.
+    if (error?.code === "PGRST103") return { rows: [], total: page > 1 ? (await listClients({ ...opts, page: 1 })).total : 0 };
     if (error) throw error;
     const rows = ((data ?? []) as unknown as (Omit<ClientListItem, "primary_contact" | "va_count"> & {
       client_contacts: { name: string; is_primary: boolean }[];

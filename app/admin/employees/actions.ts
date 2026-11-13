@@ -72,7 +72,11 @@ export async function updateEmployee(
 
       const { status, date_hired, date_separated, ...rest } = parsed.data;
       if (isRehire(previous.status, status)) {
-        // Moves the old stint to history and reactivates, in one transaction.
+        // Save the other fields first: if that fails (e.g. duplicate email) nothing
+        // has been rehired. Then the rpc moves the old stint to history and
+        // reactivates in one transaction.
+        const { error } = await db.from("employees").update({ ...rest, updated_by: me.email }).eq("id", id);
+        if (error) throw error;
         const { error: rehireError } = await db.rpc("rehire_employee", {
           p_employee_id: id,
           p_date_hired: date_hired,
@@ -80,8 +84,6 @@ export async function updateEmployee(
           p_updated_by: me.email,
         });
         if (rehireError) throw rehireError;
-        const { error } = await db.from("employees").update({ ...rest, updated_by: me.email }).eq("id", id);
-        if (error) throw error;
       } else {
         const { error } = await db
           .from("employees")
@@ -110,9 +112,10 @@ export async function deleteEmployee(id: string, confirmText: string): Promise<F
       if (typeof confirmText !== "string" || confirmText.trim().toUpperCase() !== data.employee_no) {
         return { ok: false, error: `Type ${data.employee_no} to confirm.` };
       }
-      await removeFolder(db, `employees/${id}`);
+      // Row first: if it fails, the files are untouched. Leftover files are the cheaper failure.
       const { error: deleteError } = await db.from("employees").delete().eq("id", id);
       if (deleteError) throw deleteError;
+      await removeFolder(db, `employees/${id}`).catch((e) => console.error("employee files not removed", id, e));
       return null;
     });
     if (result) return result;
