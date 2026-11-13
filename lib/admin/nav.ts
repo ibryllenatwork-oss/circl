@@ -9,9 +9,9 @@ export type AdminNavItem = {
 export const ADMIN_NAV: AdminNavItem[] = [
   { label: "Dashboard", href: "/admin", enabled: true },
   { label: "Users", href: "/admin/users", enabled: true, superadminOnly: true },
-  { label: "HR", href: "/admin/hr", enabled: false },
+  { label: "Employees", href: "/admin/employees", enabled: true },
+  { label: "Clients", href: "/admin/clients", enabled: true },
   { label: "Services & Rates", href: "/admin/services", enabled: false },
-  { label: "Employees", href: "/admin/employees", enabled: false },
   { label: "Projects", href: "/admin/projects", enabled: false },
 ];
 

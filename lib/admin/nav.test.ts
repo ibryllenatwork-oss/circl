@@ -1,13 +1,13 @@
 import { it, expect } from "vitest";
 import { ADMIN_NAV, visibleNav } from "./nav";
 
-it("has Users enabled and module placeholders disabled, in order", () => {
+it("lists modules in order with Employees and Clients live", () => {
   expect(ADMIN_NAV.map((i) => [i.label, i.href, i.enabled])).toEqual([
     ["Dashboard", "/admin", true],
     ["Users", "/admin/users", true],
-    ["HR", "/admin/hr", false],
+    ["Employees", "/admin/employees", true],
+    ["Clients", "/admin/clients", true],
     ["Services & Rates", "/admin/services", false],
-    ["Employees", "/admin/employees", false],
     ["Projects", "/admin/projects", false],
   ]);
 });
