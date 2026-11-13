@@ -60,10 +60,51 @@ Supabase's built-in email sender only allows a few emails per hour. Before
 inviting many people, set up your own email service under **Authentication →
 Emails → SMTP Settings**.
 
-## 6. Invite the first manager (you)
+## 6. Turn on Google sign-in
 
-1. Go to **Authentication → Users → Add user → Send invitation**, and enter
-   your email.
-2. Open the email and click the link. Set your password. You land on `/admin`.
+### 6a. Google Cloud (https://console.cloud.google.com)
 
-After this, invite other managers from **Admin → Users** in the app.
+1. Create a project, for example `circl`. Use the project picker at the top,
+   then **New project**.
+2. Go to **APIs & Services → OAuth consent screen**, also called **Google Auth
+   Platform → Branding**:
+   - **App name:** `circl.`
+   - **Support email:** your email
+   - **Audience:** External
+3. Under **Audience**, click **Publish app**. While the app is left in
+   "Testing", only the test users you list there can sign in.
+4. Go to **APIs & Services → Credentials → Create credentials → OAuth client ID**:
+   - **Application type:** Web application
+   - **Name:** `circl Supabase`
+   - **Authorized JavaScript origins:** `http://localhost:3000`, and later your
+     Vercel address
+   - **Authorized redirect URIs:** `https://<project-ref>.supabase.co/auth/v1/callback`.
+     Supabase shows this exact address on its Google provider page, so copy it
+     from there.
+5. Copy the **Client ID** and the **Client secret**.
+
+### 6b. Supabase
+
+Go to **Authentication → Sign In / Providers → Google**. Turn on **Enable Sign
+in with Google**, paste the Client ID and the Client secret, then click
+**Save**.
+
+Public sign-up stays off, so Google only lets in people who already exist under
+**Authentication → Users**. Anyone else sees "This Google account isn't a
+circl. manager."
+
+## 7. Add the superadmin (you)
+
+The superadmin email comes from the `SUPERADMIN_EMAILS` setting in `.env.local`,
+and in Vercel. Out of the box it is `ibryllen.atwork@gmail.com`.
+
+1. Go to **Authentication → Users → Add user → Create new user**:
+   - **Email:** `ibryllen.atwork@gmail.com`
+   - **Password:** any strong password, saved in your password manager
+   - Tick **Auto Confirm User**.
+2. In the app, click **Continue with Google** and choose that Gmail account.
+   You land on `/admin`, and **Users** appears in the sidebar.
+
+From then on, invite other managers from **Admin → Users**. They can sign in
+with Google if they were invited with their Gmail address. Otherwise they sign
+in with the password they set from the invite email.

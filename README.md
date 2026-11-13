@@ -32,6 +32,7 @@ manager), see [docs/supabase-setup.md](docs/supabase-setup.md).
 | `NEXT_PUBLIC_SUPABASE_URL` | Browser and server |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Browser and server (public key) |
 | `SUPABASE_SERVICE_ROLE_KEY` | **Server only** (`lib/supabase/admin.ts`). Never commit it, and never give it a `NEXT_PUBLIC_` prefix. |
+| `SUPERADMIN_EMAILS` | **Server only.** A comma-separated list of the emails that can manage users. Superadmins can't be removed from inside the app. To add one, edit this value in Vercel and redeploy. |
 
 ## Folder map
 
