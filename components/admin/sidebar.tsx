@@ -10,7 +10,13 @@ function isActive(pathname: string, href: string) {
   return href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
 }
 
-export function Sidebar({ isSuperadmin }: { isSuperadmin: boolean }) {
+export function Sidebar({
+  isSuperadmin,
+  devMode = false,
+}: {
+  isSuperadmin: boolean;
+  devMode?: boolean;
+}) {
   const pathname = usePathname();
 
   return (
@@ -46,7 +52,13 @@ export function Sidebar({ isSuperadmin }: { isSuperadmin: boolean }) {
         )}
       </nav>
       <div className="md:mt-auto">
-        <LogoutButton />
+        {devMode ? (
+          <p className="rounded-md border border-dashed px-3 py-2 text-xs text-muted-foreground">
+            Dev mode: sign-in is off on this computer.
+          </p>
+        ) : (
+          <LogoutButton />
+        )}
       </div>
     </aside>
   );

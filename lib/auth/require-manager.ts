@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { isSuperadmin, parseSuperadminEmails } from "@/lib/auth/roles";
+import { authBypassEnabled, DEV_MANAGER } from "@/lib/auth/dev-bypass";
 
 export type Manager = { id: string; email: string; isSuperadmin: boolean };
 
@@ -14,6 +15,8 @@ export function superadminEmails(): string[] {
  * Every signed-in user is management (no public sign-up).
  */
 export async function requireManager(): Promise<Manager | null> {
+  if (authBypassEnabled()) return { ...DEV_MANAGER };
+
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getUser();
   if (error || !data.user) return null;

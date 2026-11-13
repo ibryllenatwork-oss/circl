@@ -2,11 +2,24 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { hasEnvVars } from "../utils";
 import { isProtectedPath } from "@/lib/auth/paths";
+import { authBypassEnabled } from "@/lib/auth/dev-bypass";
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   });
+
+  // Local dev only: sign-in is off, so open straight into the admin.
+  if (authBypassEnabled()) {
+    const { pathname } = request.nextUrl;
+    if (pathname === "/" || pathname.startsWith("/auth/login")) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
+    return supabaseResponse;
+  }
 
   // If the env vars are not set, skip proxy check. You can remove this
   // once you setup the project.

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { requireManager } from "@/lib/auth/require-manager";
 import { Sidebar } from "./sidebar";
+import { DEV_MANAGER } from "@/lib/auth/dev-bypass";
 
 /**
  * Verifies the session with Supabase Auth (getUser, not just the JWT) before
@@ -14,7 +15,7 @@ export async function AdminShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
-      <Sidebar isSuperadmin={me.isSuperadmin} />
+      <Sidebar isSuperadmin={me.isSuperadmin} devMode={me.id === DEV_MANAGER.id} />
       <main className="flex-1 p-6">{children}</main>
     </div>
   );

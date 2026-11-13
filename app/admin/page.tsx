@@ -1,16 +1,12 @@
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { createClient } from "@/lib/supabase/server";
+import { requireManager } from "@/lib/auth/require-manager";
 
 async function Welcome() {
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.getClaims();
+  const me = await requireManager();
+  if (!me) redirect("/auth/login");
 
-  if (error || !data?.claims) {
-    redirect("/auth/login");
-  }
-
-  return <p className="text-muted-foreground">Welcome, {data.claims.email}.</p>;
+  return <p className="text-muted-foreground">Welcome, {me.email}.</p>;
 }
 
 export default function AdminHome() {
