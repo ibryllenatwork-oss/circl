@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ADMIN_NAV } from "@/lib/admin/nav";
+import { visibleNav } from "@/lib/admin/nav";
 import { LogoutButton } from "@/components/logout-button";
 import { cn } from "@/lib/utils";
 
@@ -10,7 +10,7 @@ function isActive(pathname: string, href: string) {
   return href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
 }
 
-export function Sidebar() {
+export function Sidebar({ isSuperadmin }: { isSuperadmin: boolean }) {
   const pathname = usePathname();
 
   return (
@@ -19,7 +19,7 @@ export function Sidebar() {
         circl. admin
       </Link>
       <nav className="flex flex-row gap-1 overflow-x-auto md:flex-col">
-        {ADMIN_NAV.map((item) =>
+        {visibleNav(isSuperadmin).map((item) =>
           item.enabled ? (
             <Link
               key={item.href}

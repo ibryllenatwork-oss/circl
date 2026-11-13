@@ -11,11 +11,13 @@ describe("parseInviteEmail", () => {
 });
 
 describe("canRemoveManager", () => {
-  it("allows removing someone else", () => expect(canRemoveManager("a", "b")).toBe(true));
-  it("refuses removing yourself", () => expect(canRemoveManager("a", "a")).toBe(false));
+  it("allows removing another regular manager", () =>
+    expect(canRemoveManager("a", "b", false)).toBe(true));
+  it("refuses removing yourself", () => expect(canRemoveManager("a", "a", false)).toBe(false));
+  it("refuses removing a superadmin", () => expect(canRemoveManager("a", "b", true)).toBe(false));
   it("refuses empty ids", () => {
-    expect(canRemoveManager("a", "")).toBe(false);
-    expect(canRemoveManager("", "b")).toBe(false);
+    expect(canRemoveManager("a", "", false)).toBe(false);
+    expect(canRemoveManager("", "b", false)).toBe(false);
   });
 });
 

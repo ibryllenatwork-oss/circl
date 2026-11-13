@@ -1,7 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireManager } from "@/lib/auth/require-manager";
+import { requireManager, superadminEmails } from "@/lib/auth/require-manager";
+import { isSuperadmin } from "@/lib/auth/roles";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { canRemoveManager, inviteErrorMessage, parseInviteEmail } from "@/lib/users/rules";
 
@@ -12,11 +13,18 @@ const SESSION_EXPIRED: ActionResult = {
   error: "Your session expired. Sign in again.",
 };
 
+const NOT_SUPERADMIN: ActionResult = {
+  ok: false,
+  error: "Only a superadmin can manage users.",
+};
+
 export async function inviteManager(
   _prev: ActionResult | null,
   formData: FormData,
 ): Promise<ActionResult> {
-  if (!(await requireManager())) return SESSION_EXPIRED;
+  const me = await requireManager();
+  if (!me) return SESSION_EXPIRED;
+  if (!me.isSuperadmin) return NOT_SUPERADMIN;
 
   const parsed = parseInviteEmail(formData.get("email"));
   if (!parsed.ok) return parsed;
@@ -37,13 +45,24 @@ export async function inviteManager(
 export async function removeManager(userId: string): Promise<ActionResult> {
   const me = await requireManager();
   if (!me) return SESSION_EXPIRED;
+  if (!me.isSuperadmin) return NOT_SUPERADMIN;
 
-  if (!canRemoveManager(me.id, userId)) {
-    return { ok: false, error: "You can't remove your own account." };
+  if (typeof userId !== "string" || !userId) {
+    return { ok: false, error: "Could not remove that manager. Try again." };
   }
+  if (userId === me.id) return { ok: false, error: "You can't remove your own account." };
 
   try {
-    const { error } = await createAdminClient().auth.admin.deleteUser(userId);
+    const admin = createAdminClient();
+    const { data, error: lookupError } = await admin.auth.admin.getUserById(userId);
+    if (lookupError || !data.user) throw lookupError ?? new Error("not found");
+
+    const targetIsSuperadmin = isSuperadmin(data.user.email, superadminEmails());
+    if (!canRemoveManager(me.id, userId, targetIsSuperadmin)) {
+      return { ok: false, error: "A superadmin can't be removed." };
+    }
+
+    const { error } = await admin.auth.admin.deleteUser(userId);
     if (error) throw error;
   } catch {
     return { ok: false, error: "Could not remove that manager. Try again." };

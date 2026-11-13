@@ -11,9 +11,13 @@ export function parseInviteEmail(input: unknown): ParsedEmail {
   return { ok: false, error: "Enter a valid email address." };
 }
 
-/** A manager may remove anyone except themselves. */
-export function canRemoveManager(callerId: string, targetId: string): boolean {
-  return Boolean(callerId) && Boolean(targetId) && callerId !== targetId;
+/** A superadmin may remove any regular manager, but never themselves or another superadmin. */
+export function canRemoveManager(
+  callerId: string,
+  targetId: string,
+  targetIsSuperadmin: boolean,
+): boolean {
+  return Boolean(callerId) && Boolean(targetId) && callerId !== targetId && !targetIsSuperadmin;
 }
 
 /** Turns a Supabase invite error into a message a manager can act on. */

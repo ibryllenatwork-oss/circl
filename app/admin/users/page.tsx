@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { requireManager } from "@/lib/auth/require-manager";
+import { requireManager, superadminEmails } from "@/lib/auth/require-manager";
+import { isSuperadmin } from "@/lib/auth/roles";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { InviteForm } from "@/components/admin/invite-form";
 import { RemoveButton } from "@/components/admin/remove-button";
@@ -12,6 +13,10 @@ function formatDate(value?: string | null) {
 async function ManagerTable() {
   const me = await requireManager();
   if (!me) redirect("/auth/login");
+  if (!me.isSuperadmin) {
+    return <p className="text-sm text-red-500">Only a superadmin can manage users.</p>;
+  }
+  const superadmins = superadminEmails();
 
   let users;
   try {
@@ -30,6 +35,8 @@ async function ManagerTable() {
   }
 
   return (
+    <>
+    <InviteForm />
     <div className="overflow-x-auto rounded-md border">
       <table className="w-full text-sm">
         <thead className="bg-muted text-left">
@@ -41,22 +48,31 @@ async function ManagerTable() {
           </tr>
         </thead>
         <tbody>
-          {users.map((u) => (
-            <tr key={u.id} className="border-t">
-              <td className="p-3">
-                {u.email}
-                {u.id === me.id && <span className="ml-2 text-xs text-muted-foreground">(you)</span>}
-              </td>
-              <td className="p-3">{formatDate(u.invited_at ?? u.created_at)}</td>
-              <td className="p-3">{formatDate(u.last_sign_in_at) ?? "Pending"}</td>
-              <td className="p-3 text-right">
-                {u.id !== me.id && <RemoveButton userId={u.id} email={u.email ?? ""} />}
-              </td>
-            </tr>
-          ))}
+          {users.map((u) => {
+            const superadmin = isSuperadmin(u.email, superadmins);
+            return (
+              <tr key={u.id} className="border-t">
+                <td className="p-3">
+                  {u.email}
+                  {superadmin && (
+                    <span className="ml-2 rounded border px-1.5 text-[10px] uppercase">Superadmin</span>
+                  )}
+                  {u.id === me.id && <span className="ml-2 text-xs text-muted-foreground">(you)</span>}
+                </td>
+                <td className="p-3">{formatDate(u.invited_at ?? u.created_at)}</td>
+                <td className="p-3">{formatDate(u.last_sign_in_at) ?? "Pending"}</td>
+                <td className="p-3 text-right">
+                  {u.id !== me.id && !superadmin && (
+                    <RemoveButton userId={u.id} email={u.email ?? ""} />
+                  )}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
+    </>
   );
 }
 
@@ -69,7 +85,6 @@ export default function UsersPage() {
           Everyone listed here can sign in to the circl. admin.
         </p>
       </div>
-      <InviteForm />
       <Suspense fallback={<p className="text-sm text-muted-foreground">Loading managers...</p>}>
         <ManagerTable />
       </Suspense>
