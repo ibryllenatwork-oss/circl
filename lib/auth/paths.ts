@@ -15,7 +15,7 @@ const PROBE_ORIGIN = "http://internal.invalid";
  */
 export function safeNext(next: string | null | undefined): string {
   if (typeof next !== "string" || !/^\/(?!\/)/.test(next)) return ADMIN_HOME;
-  // eslint-disable-next-line no-control-regex
+   
   if (/[\x00-\x20\x7f\\]/.test(next)) return ADMIN_HOME;
   try {
     if (new URL(next, PROBE_ORIGIN).origin !== PROBE_ORIGIN) return ADMIN_HOME;

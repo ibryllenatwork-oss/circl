@@ -52,6 +52,12 @@ export const LABELS: Record<string, string> = {
   nda: "NDA",
   sow: "Statement of work",
   other: "Other",
+  // Clients
+  prospect: "Prospect",
+  paused: "Paused",
+  ended: "Ended",
+  weekly: "Weekly",
+  biweekly: "Every two weeks",
 };
 
 export const label = (value: string | null | undefined) => (value ? (LABELS[value] ?? value) : "—");
