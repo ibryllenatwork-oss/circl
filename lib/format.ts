@@ -1,9 +1,15 @@
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-/** "2025-01-06" → "Jan 6, 2025" (string-based, so no timezone shift). */
+const manilaDay = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Manila" });
+
+/**
+ * "2025-01-06" → "Jan 6, 2025" (plain dates are used as-is, no timezone shift).
+ * Timestamps ("2026-11-13T16:30:00Z") are shown as the Manila calendar date.
+ */
 export function formatDate(iso: string | null | undefined): string {
   if (!iso) return "—";
-  const [y, m, d] = iso.slice(0, 10).split("-").map(Number);
+  const day = iso.length > 10 && iso.includes("T") ? manilaDay.format(new Date(iso)) : iso.slice(0, 10);
+  const [y, m, d] = day.split("-").map(Number);
   if (!y || !m || !d) return "—";
   return `${MONTHS[m - 1]} ${d}, ${y}`;
 }
@@ -59,9 +65,8 @@ export function maskValue(value: string | null | undefined): string {
 
 export function formatMoney(amount: number | null | undefined, currency: string): string {
   if (amount == null) return "—";
-  return new Intl.NumberFormat("en-US", { style: "currency", currency, currencyDisplay: "narrowSymbol" }).format(
-    amount,
-  );
+  // "symbol" keeps A$ / CA$ / NZ$ distinct from US$ ("$"); PHP shows as ₱.
+  return new Intl.NumberFormat("en-US", { style: "currency", currency, currencyDisplay: "symbol" }).format(amount);
 }
 
 export function formatBytes(n: number | null | undefined): string {

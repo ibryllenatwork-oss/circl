@@ -28,6 +28,17 @@ it("formats dates without timezone drift", () => {
   expect(formatDate(null)).toBe("—");
 });
 
+it("shows timestamps as the Manila calendar date", () => {
+  // 16:30 UTC on Nov 13 is 00:30 on Nov 14 in Manila (UTC+8).
+  expect(formatDate("2026-11-13T16:30:00.000+00:00")).toBe("Nov 14, 2026");
+  expect(formatDate("2026-11-13T10:00:00Z")).toBe("Nov 13, 2026");
+});
+
+it("distinguishes dollar currencies", () => {
+  expect(formatMoney(12.5, "AUD")).toBe("A$12.50");
+  expect(formatMoney(12.5, "CAD")).toBe("CA$12.50");
+});
+
 it("builds full names", () => {
   expect(fullName({ first_name: "Ana", middle_name: "Reyes", last_name: "Cruz", suffix: "Jr." })).toBe(
     "Ana Reyes Cruz Jr.",

@@ -8,6 +8,7 @@ import { parseClientForm } from "@/lib/clients/schema";
 import { GENERIC_SAVE_ERROR, SESSION_EXPIRED_MESSAGE, isUuid, type FormState } from "@/lib/validation/action";
 import { formValues } from "@/lib/validation/form";
 import { uniqueViolationField } from "@/lib/validation/ph";
+import { todayInManila } from "@/lib/format";
 
 const UNIQUE_FIELDS = { clients_company_name_key: "company_name" };
 
@@ -88,7 +89,11 @@ export async function assignEmployee(clientId: string, employeeId: string): Prom
       }
       const { error } = await db
         .from("client_assignments")
-        .upsert({ client_id: clientId, employee_id: employeeId }, { onConflict: "client_id,employee_id", ignoreDuplicates: true });
+        .upsert(
+          // The database's current_date is UTC; record the Manila date instead.
+          { client_id: clientId, employee_id: employeeId, assigned_on: todayInManila() },
+          { onConflict: "client_id,employee_id", ignoreDuplicates: true },
+        );
       if (error) throw error;
       revalidatePath(`/admin/clients/${clientId}`);
       revalidatePath(`/admin/employees/${employeeId}`);

@@ -51,10 +51,36 @@ manager), see [docs/supabase-setup.md](docs/supabase-setup.md).
 | `brand/` | Logo source files |
 | `docs/` | Design, plans, setup guides |
 
-## Adding a module (HR, Services & Rates, ...)
+## Modules
+
+- **Employees** (`/admin/employees`): the VA 201 file. It holds personal
+  details, government IDs, employment, payout, emergency contact, education,
+  documents with expiry dates, and a photo. Rehiring reactivates the same
+  record and keeps past stints in its history.
+- **Clients** (`/admin/clients`): company, contacts (one primary), billing,
+  engagement, assigned VAs and documents.
+
+**How access works:** all data goes through `withManager` in
+`lib/data/db.ts`, using the service-role key. Every table has RLS on with no
+policies, so the public key can't read anything. Files live in the private
+`documents` bucket and are only reachable through short-lived signed URLs.
+
+**Dev mode:** on your computer, dev mode writes to the live Supabase project.
+Records you create there are tagged "Dev", and the lists' **Created in dev
+mode** filter finds them so you can delete them.
+
+### Applying database migrations
+
+```bash
+npx supabase login
+npx supabase link --project-ref yjtqwoljbihvljlejual
+npx supabase db push --linked
+```
+
+## Adding a module (Services & Rates, Projects, ...)
 
 1. Create a migration: `npx supabase migration new <name>`.
-2. In it, turn on row-level security for every new table, with a policy that
-   lets signed-in users (`authenticated`) read and write.
+2. In it, turn on row-level security for every new table, with **no policies**
+   (data is read and written only through `withManager` on the server).
 3. Add pages under `app/admin/<module>/`, and set `enabled: true` for the
    module in `lib/admin/nav.ts`.
