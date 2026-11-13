@@ -27,6 +27,10 @@ in Vercel's environment variables only.
 Go to **Authentication → Sign In / Providers**. Turn off **Allow new users to
 sign up**. Invites still work.
 
+Leave **Confirm email** turned on. Superadmins are recognized by their email
+address, so an email change must be confirmed from the new inbox. Also, create
+a superadmin's account before you add their email to `SUPERADMIN_EMAILS`.
+
 ## 4. Site URL and redirect URLs
 
 Go to **Authentication → URL Configuration**.
