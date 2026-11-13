@@ -64,7 +64,7 @@ Supabase's built-in email sender only allows a few emails per hour. Before
 inviting many people, set up your own email service under **Authentication →
 Emails → SMTP Settings**.
 
-## 6. Turn on Google sign-in
+## 6. (Optional, later) Turn on Google sign-in
 
 ### 6a. Google Cloud (https://console.cloud.google.com)
 
@@ -97,6 +97,11 @@ Public sign-up stays off, so Google only lets in people who already exist under
 **Authentication → Users**. Anyone else sees "This Google account isn't a
 circl. manager."
 
+### 6c. Show the button
+
+Set `NEXT_PUBLIC_ENABLE_GOOGLE_SIGNIN=true` in `.env.local`, and in Vercel, then
+restart or redeploy. Until then, the login page shows only email and password.
+
 ## 7. Add the superadmin (you)
 
 The superadmin email comes from the `SUPERADMIN_EMAILS` setting in `.env.local`,
@@ -106,9 +111,9 @@ and in Vercel. Out of the box it is `ibryllen.atwork@gmail.com`.
    - **Email:** `ibryllen.atwork@gmail.com`
    - **Password:** any strong password, saved in your password manager
    - Tick **Auto Confirm User**.
-2. In the app, click **Continue with Google** and choose that Gmail account.
-   You land on `/admin`, and **Users** appears in the sidebar.
+2. In the app, sign in at `/auth/login` with that email and password. You land
+   on `/admin`, and **Users** appears in the sidebar.
 
-From then on, invite other managers from **Admin → Users**. They can sign in
-with Google if they were invited with their Gmail address. Otherwise they sign
-in with the password they set from the invite email.
+From then on, invite other managers from **Admin → Users**. They sign in with
+the password they set from the invite email, or with Google once section 6 is
+done.

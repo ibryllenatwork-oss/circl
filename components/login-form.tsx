@@ -15,6 +15,9 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { loginErrorMessage } from "@/lib/auth/login-errors";
+
+/** Off until Google is set up in Google Cloud + Supabase (docs/supabase-setup.md §6). */
+const GOOGLE_SIGNIN_ENABLED = process.env.NEXT_PUBLIC_ENABLE_GOOGLE_SIGNIN === "true";
 import { useState } from "react";
 
 export function LoginForm({
@@ -73,20 +76,24 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            onClick={handleGoogle}
-            disabled={isLoading}
-          >
-            Continue with Google
-          </Button>
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
-            <span className="h-px flex-1 bg-border" />
-            or use email
-            <span className="h-px flex-1 bg-border" />
-          </div>
+          {GOOGLE_SIGNIN_ENABLED && (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={handleGoogle}
+                disabled={isLoading}
+              >
+                Continue with Google
+              </Button>
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <span className="h-px flex-1 bg-border" />
+                or use email
+                <span className="h-px flex-1 bg-border" />
+              </div>
+            </>
+          )}
           <form onSubmit={handleLogin}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
