@@ -12,7 +12,7 @@ async function ErrorContent({
     <>
       {params?.error ? (
         <p className="text-sm text-muted-foreground">
-          Code error: {params.error}
+          {params.error}
         </p>
       ) : (
         <p className="text-sm text-muted-foreground">
@@ -29,13 +29,13 @@ export default function Page({
   searchParams: Promise<{ error: string }>;
 }) {
   return (
-    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+    <div className="w-full">
       <div className="w-full max-w-sm">
         <div className="flex flex-col gap-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl">
-                Sorry, something went wrong.
+              <CardTitle className="text-xl">
+                That link didn&apos;t work
               </CardTitle>
             </CardHeader>
             <CardContent>

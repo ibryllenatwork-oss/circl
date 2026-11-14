@@ -70,9 +70,9 @@ export function LoginForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
+          <CardTitle className="text-xl">Sign in</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account
+            Welcome back. Sign in to manage circl.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
@@ -129,7 +129,7 @@ export function LoginForm({
                 <p role="alert" className="text-sm text-red-500">{error ?? urlError}</p>
               )}
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Logging in..." : "Login"}
+                {isLoading ? "Signing in…" : "Sign in"}
               </Button>
             </div>
           </form>
