@@ -14,7 +14,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { label: "Users", href: "/admin/users", enabled: true, icon: "users", superadminOnly: true },
   { label: "Employees", href: "/admin/employees", enabled: true, icon: "employees" },
   { label: "Clients", href: "/admin/clients", enabled: true, icon: "clients" },
-  { label: "Services & Rates", href: "/admin/services", enabled: false, icon: "services" },
+  { label: "Services & Rates", href: "/admin/services", enabled: true, icon: "services" },
   { label: "Projects", href: "/admin/projects", enabled: false, icon: "projects" },
 ];
 

@@ -15,7 +15,7 @@ it("lists modules in order with Employees and Clients live", () => {
     ["Users", "/admin/users", true],
     ["Employees", "/admin/employees", true],
     ["Clients", "/admin/clients", true],
-    ["Services & Rates", "/admin/services", false],
+    ["Services & Rates", "/admin/services", true],
     ["Projects", "/admin/projects", false],
   ]);
 });
