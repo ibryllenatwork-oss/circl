@@ -17,10 +17,18 @@ const RULES: { match: (code: string, msg: string) => boolean; field: string; mes
   },
   { match: (_c, m) => m.startsWith("not_priceable"), field: "lines", message: "One of the services now has subservices. Pick a subservice instead." },
   {
+    match: (c, m) => c === "23503" && m.includes('on table "package_lines"') && m.includes("package_lines_service_id_fkey"),
+    field: "lines",
+    message: "One of the services was deleted. Refresh the page and pick it again.",
+  },
+  {
     match: (c, m) => c === "23503" && m.includes("package_lines_service_id_fkey"),
     field: "_form",
     message: "This service is used in a package. Archive it instead.",
   },
+  { match: (_c, m) => m.startsWith("parent_not_found"), field: "parent_id", message: "That parent service no longer exists. Refresh and try again." },
+  { match: (_c, m) => m.startsWith("service not found"), field: "_form", message: "This service no longer exists. Refresh the page." },
+  { match: (c) => c === "23514", field: "_form", message: "Some values are out of range. Check hours and amounts." },
   {
     match: (c, m) => c === "23503" && m.includes("services_parent_id_fkey"),
     field: "_form",

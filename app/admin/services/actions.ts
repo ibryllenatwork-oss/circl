@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { withManager, UnauthorizedError } from "@/lib/data/db";
-import { parsePackageForm, parseRatesForm, parseServiceForm } from "@/lib/services/schema";
+import { PACKAGE_STATUSES, parsePackageForm, parseRatesForm, parseServiceForm, type PackageStatus } from "@/lib/services/schema";
+import { copyName } from "@/lib/services/copy-name";
 import { serviceDbError } from "@/lib/services/errors";
 import { GENERIC_SAVE_ERROR, SESSION_EXPIRED_MESSAGE, isUuid, type FormState } from "@/lib/validation/action";
 import { formValues } from "@/lib/validation/form";
@@ -207,7 +208,7 @@ export async function savePackage(id: string | null, _prev: FormState | null, fo
   redirect(`${PACKAGES}/${savedId}?saved=1`);
 }
 
-/** Copies a package (lines included) as "Copy of …" and opens the copy. */
+/** Copies a package (lines included) as a Draft named "Copy of …" and opens the copy. */
 export async function duplicatePackage(id: string): Promise<Result> {
   if (!isUuid(id)) return { ok: false, error: "Could not duplicate." };
   let newId: string | null = null;
@@ -220,21 +221,23 @@ export async function duplicatePackage(id: string): Promise<Result> {
         .maybeSingle();
       if (error) throw error;
       if (!src) return null;
-      const { data: names, error: namesError } = await db.from("packages").select("name").ilike("name", `Copy of ${src.name}%`);
-      if (namesError) throw namesError;
-      const taken = new Set((names ?? []).map((n) => n.name.toLowerCase()));
-      let name = `Copy of ${src.name}`;
-      for (let n = 2; taken.has(name.toLowerCase()); n++) name = `Copy of ${src.name} (${n})`;
       const lines = [...(src.package_lines as { service_id: string; tier: string; hours_per_month: number; position: number }[])]
         .sort((a, b) => a.position - b.position)
         .map((l) => ({ service_id: l.service_id, tier: l.tier, hours_per_month: String(l.hours_per_month) }));
-      const { data: copyId, error: saveError } = await db.rpc("save_package", {
-        p_package: { name: name.slice(0, 120), description: src.description, notes: src.notes, monthly_amount: String(src.monthly_amount), active: true },
-        p_lines: lines,
-        p_actor: me.email,
-      });
-      if (saveError) throw saveError;
-      return copyId as string;
+      // Exact-name comparison (no LIKE patterns); retry if another copy lands first.
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const { data: names, error: namesError } = await db.from("packages").select("name");
+        if (namesError) throw namesError;
+        const name = copyName(src.name, (names ?? []).map((n) => n.name as string));
+        const { data: copyId, error: saveError } = await db.rpc("save_package", {
+          p_package: { name, description: src.description, notes: src.notes, monthly_amount: String(src.monthly_amount), status: "draft" },
+          p_lines: lines,
+          p_actor: me.email,
+        });
+        if (!saveError) return copyId as string;
+        if (saveError.code !== "23505") throw saveError;
+      }
+      throw new Error("Could not find a free name for the copy.");
     });
   } catch (err) {
     return failure(err, "Could not duplicate the package.");
@@ -244,18 +247,24 @@ export async function duplicatePackage(id: string): Promise<Result> {
   redirect(`${PACKAGES}/${newId}?saved=1`);
 }
 
-export async function setPackageActive(id: string, active: boolean): Promise<Result> {
-  if (!isUuid(id) || typeof active !== "boolean") return { ok: false, error: "Could not update." };
+const STATUS_MESSAGES: Record<PackageStatus, string> = {
+  draft: "Moved to drafts.",
+  active: "Package is now active.",
+  archived: "Package archived.",
+};
+
+export async function setPackageStatus(id: string, status: PackageStatus): Promise<Result> {
+  if (!isUuid(id) || !(PACKAGE_STATUSES as readonly string[]).includes(status)) return { ok: false, error: "Could not update." };
   try {
     await withManager(async (db, me) => {
-      const { error } = await db.from("packages").update({ active, updated_by: me.email }).eq("id", id);
+      const { error } = await db.from("packages").update({ status, updated_by: me.email }).eq("id", id);
       if (error) throw error;
     });
   } catch (err) {
     return failure(err, "Could not update the package.");
   }
   revalidatePath(PACKAGES);
-  return { ok: true, message: active ? "Package restored." : "Package archived." };
+  return { ok: true, message: STATUS_MESSAGES[status] };
 }
 
 export async function deletePackage(id: string): Promise<Result> {

@@ -40,6 +40,10 @@ describe("parseRatesForm", () => {
     const r = parseRatesForm(fd({ entry_client: "12", entry_va: "" }));
     expect(!r.ok && r.fieldErrors.entry_va).toMatch(/both/i);
   });
+  it("rejects fractions of a cent", () => {
+    const r = parseRatesForm(fd({ entry_client: "12.345", entry_va: "7" }));
+    expect(!r.ok && r.fieldErrors.entry_client).toMatch(/cents/i);
+  });
   it("rejects negatives and absurd values", () => {
     const r = parseRatesForm(fd({ entry_client: "-1", entry_va: "5", expert_client: "20000", expert_va: "5" }));
     expect(!r.ok && Object.keys(r.fieldErrors)).toEqual(expect.arrayContaining(["entry_client", "expert_client"]));
@@ -48,11 +52,11 @@ describe("parseRatesForm", () => {
 
 describe("parsePackageForm", () => {
   const lines = (l: unknown) => JSON.stringify(l);
-  const base = { name: "Starter Admin", monthly_amount: "900", active: "on" };
+  const base = { name: "Starter Admin", monthly_amount: "900", status: "active" };
 
   it("accepts a package with lines", () => {
     const r = parsePackageForm(fd({ ...base, lines: lines([{ service_id: S1, tier: "intermediate", hours_per_month: "40" }]) }));
-    expect(r.ok && r.data.package).toMatchObject({ name: "Starter Admin", monthly_amount: 900, active: true });
+    expect(r.ok && r.data.package).toMatchObject({ name: "Starter Admin", monthly_amount: 900, status: "active" });
     expect(r.ok && r.data.lines).toEqual([{ service_id: S1, tier: "intermediate", hours_per_month: 40 }]);
   });
   it("needs a name, an amount and at least one line", () => {
@@ -78,8 +82,19 @@ describe("parsePackageForm", () => {
     const r = parsePackageForm(fd({ ...base, lines: lines([{ service_id: "", tier: "guru", hours_per_month: "0" }]) }));
     expect(!r.ok && r.fieldErrors.lines).toMatch(/^Line 1:/);
   });
-  it("treats a missing active checkbox as archived", () => {
-    const r = parsePackageForm(fd({ name: "X", monthly_amount: "1", lines: lines([{ service_id: S1, tier: "entry", hours_per_month: "1" }]) }));
-    expect(r.ok && r.data.package.active).toBe(false);
+  it("defaults the status to draft and rejects unknown statuses", () => {
+    const one = lines([{ service_id: S1, tier: "entry", hours_per_month: "1" }]);
+    const r = parsePackageForm(fd({ name: "X", monthly_amount: "1", lines: one }));
+    expect(r.ok && r.data.package.status).toBe("draft");
+    const bad = parsePackageForm(fd({ name: "X", monthly_amount: "1", status: "live", lines: one }));
+    expect(!bad.ok && bad.fieldErrors.status).toBeTruthy();
+  });
+  it("allows one decimal for hours and two for the amount", () => {
+    const ok1 = parsePackageForm(fd({ ...base, monthly_amount: "899.99", lines: lines([{ service_id: S1, tier: "entry", hours_per_month: "7.5" }]) }));
+    expect(ok1.ok).toBe(true);
+    const hrs = parsePackageForm(fd({ ...base, lines: lines([{ service_id: S1, tier: "entry", hours_per_month: "7.25" }]) }));
+    expect(!hrs.ok && hrs.fieldErrors.lines).toMatch(/one decimal/i);
+    const amt = parsePackageForm(fd({ ...base, monthly_amount: "900.123", lines: lines([{ service_id: S1, tier: "entry", hours_per_month: "1" }]) }));
+    expect(!amt.ok && amt.fieldErrors.monthly_amount).toMatch(/cents/i);
   });
 });

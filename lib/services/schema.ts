@@ -3,6 +3,9 @@ import { formValues, optionalText, requiredText, toFieldErrors, type FieldErrors
 import { isUuid } from "@/lib/validation/action";
 import { TIERS, type Tier } from "./pricing";
 
+export const PACKAGE_STATUSES = ["draft", "active", "archived"] as const;
+export type PackageStatus = (typeof PACKAGE_STATUSES)[number];
+
 type Parsed<T> = { ok: true; data: T } | { ok: false; fieldErrors: FieldErrors };
 
 // --------------------------------------------------------------- service
@@ -25,13 +28,20 @@ export function parseServiceForm(fd: FormData): Parsed<ServiceInput> {
 // ----------------------------------------------------------------- rates
 export type RateInput = { tier: Tier; client_rate: number | null; va_rate: number | null };
 
+/** True when n has at most `places` decimals (tolerant of float noise). */
+export function maxDecimals(n: number, places: number): boolean {
+  const scaled = n * 10 ** places;
+  return Math.abs(scaled - Math.round(scaled)) < 1e-6;
+}
+
 function money(raw: string | undefined): { value: number | null; error?: string } {
   if (raw == null || raw.trim() === "") return { value: null };
   const n = Number(raw);
   if (!Number.isFinite(n)) return { value: null, error: "Enter a number." };
   if (n < 0) return { value: null, error: "Can't be negative." };
   if (n > 10_000) return { value: null, error: "That rate is too high." };
-  return { value: Math.round(n * 100) / 100 };
+  if (!maxDecimals(n, 2)) return { value: null, error: "Use dollars and cents (at most 2 decimals)." };
+  return { value: n };
 }
 
 /** Fields: `${tier}_client` and `${tier}_va` for each tier. A fully blank tier means "no rate". */
@@ -59,7 +69,8 @@ const lineSchema = z.object({
   hours_per_month: z.coerce
     .number({ message: "Enter the hours." })
     .gt(0, "Hours must be more than 0.")
-    .max(744, "That's more hours than a month has."),
+    .max(744, "That's more hours than a month has.")
+    .refine((n) => maxDecimals(n, 1), "Use at most one decimal place for hours (e.g. 7.5)."),
 });
 
 const linesSchema = z
@@ -86,9 +97,10 @@ const packageSchema = z.object({
     z.coerce
       .number({ message: "Enter the package amount." })
       .min(0, "Can't be negative.")
-      .max(1_000_000, "That amount is too large."),
+      .max(1_000_000, "That amount is too large.")
+      .refine((n) => maxDecimals(n, 2), "Use dollars and cents (at most 2 decimals)."),
   ),
-  active: z.preprocess((v) => v === "on" || v === "true", z.boolean()),
+  status: z.preprocess((v) => (v === "" || v == null ? "draft" : v), z.enum(PACKAGE_STATUSES, { message: "Choose a status." })),
 });
 
 export type PackageInput = z.infer<typeof packageSchema>;

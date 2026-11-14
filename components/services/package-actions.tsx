@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Archive, ArchiveRestore, Copy, Eye, MoreHorizontal, Trash2 } from "lucide-react";
+import { Archive, ArchiveRestore, CheckCircle2, Copy, Eye, FilePen, MoreHorizontal, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,9 +21,26 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "@/components/admin/toast";
-import { deletePackage, duplicatePackage, setPackageActive } from "@/app/admin/services/actions";
+import { deletePackage, duplicatePackage, setPackageStatus } from "@/app/admin/services/actions";
+import type { PackageStatus } from "@/lib/services/schema";
 
-export function PackageActions({ id, name, active }: { id: string; name: string; active: boolean }) {
+/**
+ * Row/header menu for a package. On the package's own page (`detail`), status is
+ * changed in the form instead (so unsaved edits aren't lost), and deleting goes
+ * back to the list.
+ */
+export function PackageActions({
+  id,
+  name,
+  status,
+  detail = false,
+}: {
+  id: string;
+  name: string;
+  status: PackageStatus;
+  detail?: boolean;
+}) {
+  const router = useRouter();
   const [deleting, setDeleting] = useState(false);
   const [busy, startTransition] = useTransition();
 
@@ -44,18 +62,37 @@ export function PackageActions({ id, name, active }: { id: string; name: string;
           <MoreHorizontal className="h-4 w-4" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuItem asChild>
-            <Link href={`/admin/services/packages/${id}`}>
-              <Eye className="mr-2 h-4 w-4" /> Open
-            </Link>
-          </DropdownMenuItem>
+          {!detail && (
+            <DropdownMenuItem asChild>
+              <Link href={`/admin/services/packages/${id}`}>
+                <Eye className="mr-2 h-4 w-4" /> Open
+              </Link>
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem onSelect={() => run(() => duplicatePackage(id))}>
-            <Copy className="mr-2 h-4 w-4" /> Duplicate
+            <Copy className="mr-2 h-4 w-4" /> Duplicate as draft
           </DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => run(() => setPackageActive(id, !active))}>
-            {active ? <Archive className="mr-2 h-4 w-4" /> : <ArchiveRestore className="mr-2 h-4 w-4" />}
-            {active ? "Archive" : "Restore"}
-          </DropdownMenuItem>
+          {!detail && (
+            <>
+              <DropdownMenuSeparator />
+              {status !== "active" && (
+                <DropdownMenuItem onSelect={() => run(() => setPackageStatus(id, "active"))}>
+                  {status === "archived" ? <ArchiveRestore className="mr-2 h-4 w-4" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
+                  {status === "archived" ? "Restore as active" : "Mark active"}
+                </DropdownMenuItem>
+              )}
+              {status !== "draft" && (
+                <DropdownMenuItem onSelect={() => run(() => setPackageStatus(id, "draft"))}>
+                  <FilePen className="mr-2 h-4 w-4" /> Move to drafts
+                </DropdownMenuItem>
+              )}
+              {status !== "archived" && (
+                <DropdownMenuItem onSelect={() => run(() => setPackageStatus(id, "archived"))}>
+                  <Archive className="mr-2 h-4 w-4" /> Archive
+                </DropdownMenuItem>
+              )}
+            </>
+          )}
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={() => setDeleting(true)} className="text-destructive focus:text-destructive">
             <Trash2 className="mr-2 h-4 w-4" /> Delete
@@ -79,11 +116,13 @@ export function PackageActions({ id, name, active }: { id: string; name: string;
               onClick={() =>
                 startTransition(async () => {
                   const r = await deletePackage(id);
-                  if (!r.ok) toast(r.error, "error");
-                  else {
-                    toast(r.message ?? "Deleted.");
-                    setDeleting(false);
+                  if (!r.ok) {
+                    toast(r.error, "error");
+                    return;
                   }
+                  toast(r.message ?? "Deleted.");
+                  setDeleting(false);
+                  if (detail) router.push("/admin/services/packages");
                 })
               }
             >

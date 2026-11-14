@@ -2,6 +2,7 @@ import "server-only";
 import { withManager } from "@/lib/data/db";
 import { isUuid, searchTerm } from "@/lib/validation/action";
 import { effectiveActive, packageTotals, type Line, type PackageTotals, type RateTable, type Tier } from "./pricing";
+import type { PackageStatus } from "./schema";
 
 type ServiceRow = {
   id: string;
@@ -95,23 +96,23 @@ export type PackageListItem = {
   id: string;
   name: string;
   description: string | null;
-  active: boolean;
+  status: PackageStatus;
   monthly_amount: number;
   lineCount: number;
   totals: PackageTotals;
   needsReview: boolean;
 };
 
-export type PackageStatusFilter = "active" | "archived" | "all";
+export type PackageStatusFilter = PackageStatus | "all";
 export type PackageSort = { key: "name" | "amount"; dir: "asc" | "desc" };
 
 export async function listPackages(opts: { q?: string; status?: PackageStatusFilter; sort?: PackageSort } = {}): Promise<PackageListItem[]> {
   const [{ services, rates }, packages] = await Promise.all([
     loadCatalogData(),
     withManager(async (db) => {
-      let query = db.from("packages").select("id, name, description, active, monthly_amount, package_lines(service_id, tier, hours_per_month)");
-      const status = opts.status ?? "active";
-      if (status !== "all") query = query.eq("active", status === "active");
+      let query = db.from("packages").select("id, name, description, status, monthly_amount, package_lines(service_id, tier, hours_per_month)");
+      const status = opts.status ?? "all";
+      if (status !== "all") query = query.eq("status", status);
       const q = searchTerm(opts.q);
       if (q) query = query.ilike("name", `%${q}%`);
       const { data, error } = await query;
@@ -150,7 +151,7 @@ export type PackageDetail = {
   name: string;
   description: string | null;
   notes: string | null;
-  active: boolean;
+  status: PackageStatus;
   monthly_amount: number;
   updated_at: string;
   updated_by: string | null;
@@ -162,7 +163,7 @@ export async function getPackage(id: string): Promise<PackageDetail | null> {
   return withManager(async (db) => {
     const { data, error } = await db
       .from("packages")
-      .select("id, name, description, notes, active, monthly_amount, updated_at, updated_by, package_lines(service_id, tier, hours_per_month, position)")
+      .select("id, name, description, notes, status, monthly_amount, updated_at, updated_by, package_lines(service_id, tier, hours_per_month, position)")
       .eq("id", id)
       .maybeSingle();
     if (error) throw error;

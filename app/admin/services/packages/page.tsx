@@ -24,7 +24,8 @@ async function PackagesView({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
   const q = asList(params.q)[0] ?? "";
   const rawStatus = asList(params.status)[0];
-  const status: PackageStatusFilter = rawStatus === "archived" || rawStatus === "all" ? rawStatus : "active";
+  const status: PackageStatusFilter =
+    rawStatus === "active" || rawStatus === "draft" || rawStatus === "archived" ? rawStatus : "all";
   const sortKey = asList(params.sort)[0] === "amount" ? "amount" : "name";
   const dir = asList(params.dir)[0] === "desc" ? "desc" : "asc";
   const sort: PackageSort = { key: sortKey, dir };
@@ -33,7 +34,7 @@ async function PackagesView({ searchParams }: { searchParams: SearchParams }) {
 
   const chip = (value: PackageStatusFilter, label: string) => (
     <Link
-      href={withParams(BASE, params, { status: value === "active" ? undefined : value })}
+      href={withParams(BASE, params, { status: value === "all" ? undefined : value })}
       aria-current={status === value ? "true" : undefined}
       className={cn(
         "inline-flex h-8 items-center rounded-full border border-border bg-card px-3 text-[13px] transition-colors hover:border-primary/40",
@@ -49,7 +50,7 @@ async function PackagesView({ searchParams }: { searchParams: SearchParams }) {
       toolbar={
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
           <form action={BASE} method="get" className="relative w-full lg:max-w-xs">
-            {status !== "active" && <input type="hidden" name="status" value={status} />}
+            {status !== "all" && <input type="hidden" name="status" value={status} />}
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <label htmlFor="pkg-q" className="sr-only">
               Search packages
@@ -57,9 +58,10 @@ async function PackagesView({ searchParams }: { searchParams: SearchParams }) {
             <input id="pkg-q" name="q" type="search" defaultValue={q} placeholder="Package name" className={cn(fieldClass, "h-9 pl-9")} />
           </form>
           <div className="flex flex-wrap gap-2">
-            {chip("active", "Active")}
-            {chip("archived", "Archived")}
             {chip("all", "All")}
+            {chip("active", "Active")}
+            {chip("draft", "Drafts")}
+            {chip("archived", "Archived")}
           </div>
         </div>
       }
@@ -68,8 +70,8 @@ async function PackagesView({ searchParams }: { searchParams: SearchParams }) {
       {rows.length === 0 ? (
         <EmptyState
           icon={PackageOpen}
-          title={q || status !== "active" ? "No packages match" : "No packages yet"}
-          description={q || status !== "active" ? "Try another search or status." : "Bundle services at a tier and hours, then set the monthly amount."}
+          title={q || status !== "all" ? "No packages match" : "No packages yet"}
+          description={q || status !== "all" ? "Try another search or status." : "Bundle services at a tier and hours, then set the monthly amount."}
           action={
             <Button asChild size="sm">
               <Link href={`${BASE}/new`}>
@@ -106,7 +108,8 @@ async function PackagesView({ searchParams }: { searchParams: SearchParams }) {
                     <span className="text-xs text-muted-foreground">
                       {p.lineCount} line{p.lineCount === 1 ? "" : "s"}
                     </span>
-                    {!p.active && <Badge variant="neutral">Archived</Badge>}
+                    {p.status === "draft" && <Badge variant="processing">Draft</Badge>}
+                    {p.status === "archived" && <Badge variant="neutral">Archived</Badge>}
                     {p.totals.missingRates > 0 && <Badge variant="pending">Incomplete</Badge>}
                     {p.needsReview && <Badge variant="pending">Needs review</Badge>}
                   </div>
@@ -119,7 +122,7 @@ async function PackagesView({ searchParams }: { searchParams: SearchParams }) {
                   <MarginChip amount={p.totals.margin} pct={p.totals.marginPct} />
                 </td>
                 <td className={`${td} w-10 text-right`}>
-                  <PackageActions id={p.id} name={p.name} active={p.active} />
+                  <PackageActions id={p.id} name={p.name} status={p.status} />
                 </td>
               </tr>
             ))}

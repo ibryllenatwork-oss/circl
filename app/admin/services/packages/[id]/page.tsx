@@ -24,11 +24,13 @@ async function EditPackage({ params }: { params: Promise<{ id: string }> }) {
         eyebrow="Package"
         title={
           <span className="flex flex-wrap items-center gap-2">
-            {pkg.name} {!pkg.active && <Badge variant="neutral">Archived</Badge>}
+            {pkg.name}
+            {pkg.status === "draft" && <Badge variant="processing">Draft</Badge>}
+            {pkg.status === "archived" && <Badge variant="neutral">Archived</Badge>}
           </span>
         }
         description={`Last updated ${formatDate(pkg.updated_at)}${pkg.updated_by ? ` by ${pkg.updated_by}` : ""}`}
-        actions={<PackageActions id={pkg.id} name={pkg.name} active={pkg.active} />}
+        actions={<PackageActions id={pkg.id} name={pkg.name} status={pkg.status} detail />}
       />
       <PackageBuilder key={pkg.updated_at} action={savePackage.bind(null, pkg.id)} pkg={pkg} options={options} rates={rates} submitLabel="Save changes" />
     </>

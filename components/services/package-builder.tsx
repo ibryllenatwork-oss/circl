@@ -6,7 +6,8 @@ import { AlertTriangle, Calculator, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { fieldClass } from "@/components/ui/input";
-import { FormActions, FormAlert, FormSection, TextAreaField, TextField } from "@/components/admin/form-fields";
+import { FormActions, FormAlert, FormSection, SelectField, TextAreaField, TextField } from "@/components/admin/form-fields";
+import { PACKAGE_STATUSES, type PackageStatus } from "@/lib/services/schema";
 import { useFocusFirstError } from "@/components/admin/use-focus-first-error";
 import { packageTotals, TIER_LABELS, TIERS, formatPct, type RateTable, type Tier } from "@/lib/services/pricing";
 import type { PickerOption } from "@/lib/services/queries";
@@ -20,7 +21,7 @@ export type BuilderPackage = {
   name: string;
   description: string | null;
   notes: string | null;
-  active: boolean;
+  status: PackageStatus;
   monthly_amount: number;
   lines: { service_id: string; tier: Tier; hours_per_month: number }[];
 };
@@ -42,7 +43,7 @@ function Totals({ lines, rates, amount, onUseStandard }: { lines: DraftLine[]; r
   );
   const negative = t.margin < 0;
   return (
-    <div className="rounded-xl border border-border/70 bg-card p-5 shadow-card dark:border-border dark:shadow-none" aria-live="polite">
+    <div className="rounded-xl border border-border/70 bg-card p-5 shadow-card dark:border-border dark:shadow-none">
       <h2 className="mb-4 flex items-center gap-2 text-[15px] font-semibold tracking-tight">
         <Calculator className="h-4 w-4 text-primary" aria-hidden /> Package totals
       </h2>
@@ -59,7 +60,7 @@ function Totals({ lines, rates, amount, onUseStandard }: { lines: DraftLine[]; r
         <div className="my-1 border-t border-border/70" />
         {row("VA cost", usd(t.vaCost))}
       </dl>
-      <div className={cn("mt-4 rounded-lg px-4 py-3", negative ? "bg-badge-error-bg text-badge-error" : "bg-badge-success-bg text-badge-success")}>
+      <div aria-live="polite" aria-atomic="true" className={cn("mt-4 rounded-lg px-4 py-3", negative ? "bg-badge-error-bg text-badge-error" : "bg-badge-success-bg text-badge-success")}>
         <p className="text-xs font-medium uppercase tracking-wide">Margin</p>
         <p className="tabular text-2xl font-semibold">
           {negative ? "−" : ""}
@@ -138,10 +139,16 @@ export function PackageBuilder({
         <div className="flex min-w-0 flex-col gap-6">
           <FormSection title="Details" description="How this package appears in your catalog.">
             <TextField name="name" label="Package name" required defaultValue={v.name ?? pkg?.name} error={err.name} className="sm:col-span-2" />
-            <label className="flex items-center gap-2 self-end pb-2 text-sm font-medium">
-              <input type="checkbox" name="active" defaultChecked={v.active != null ? v.active === "on" : (pkg?.active ?? true)} className="h-4 w-4 accent-[hsl(var(--primary))]" />
-              Active
-            </label>
+            <SelectField
+              name="status"
+              label="Status"
+              required
+              allowBlank={false}
+              options={PACKAGE_STATUSES}
+              defaultValue={v.status ?? pkg?.status ?? "draft"}
+              error={err.status}
+              hint="Drafts are work in progress."
+            />
             <TextAreaField name="description" label="Description" rows={2} defaultValue={v.description ?? pkg?.description} className="sm:col-span-2 lg:col-span-3" />
           </FormSection>
 

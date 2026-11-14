@@ -12,6 +12,10 @@ it.each([
   [{ code: "P0001", message: "not_priceable: x" }, "lines", "One of the services now has subservices. Pick a subservice instead."],
   [{ code: "23503", message: 'violates foreign key constraint "package_lines_service_id_fkey"' }, "_form", "This service is used in a package. Archive it instead."],
   [{ code: "23503", message: 'violates foreign key constraint "services_parent_id_fkey"' }, "_form", "Delete or move this service's subservices first."],
+  [{ code: "P0001", message: "parent_not_found" }, "parent_id", "That parent service no longer exists. Refresh and try again."],
+  [{ code: "P0001", message: "service not found" }, "_form", "This service no longer exists. Refresh the page."],
+  [{ code: "23503", message: 'insert or update on table "package_lines" violates foreign key constraint "package_lines_service_id_fkey"' }, "lines", "One of the services was deleted. Refresh the page and pick it again."],
+  [{ code: "23514", message: 'new row for relation "package_lines" violates check constraint "package_lines_hours_per_month_check"' }, "_form", "Some values are out of range. Check hours and amounts."],
 ] as const)("%o → %s", (err, field, message) => expect(serviceDbError(err)).toEqual({ field, message }));
 
 it("returns null for unknown errors", () => {
