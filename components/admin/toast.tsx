@@ -2,15 +2,15 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { CheckCircle2, X } from "lucide-react";
+import { AlertCircle, CheckCircle2, X } from "lucide-react";
 
-type ToastItem = { id: number; message: string };
+type ToastItem = { id: number; message: string; tone: "success" | "error" };
 const listeners = new Set<(t: ToastItem) => void>();
 let counter = 0;
 
-/** Show a short success message from any client component. */
-export function toast(message: string) {
-  const item = { id: ++counter, message };
+/** Show a short message from any client component (success by default). */
+export function toast(message: string, tone: "success" | "error" = "success") {
+  const item = { id: ++counter, message, tone };
   listeners.forEach((l) => l(item));
 }
 
@@ -41,7 +41,11 @@ export function Toaster() {
           key={t.id}
           className="pointer-events-auto flex items-center gap-3 rounded-xl border bg-card px-4 py-3 text-sm shadow-pop animate-in fade-in-0 slide-in-from-bottom-2"
         >
-          <CheckCircle2 className="h-5 w-5 shrink-0 text-badge-success" aria-hidden />
+          {t.tone === "error" ? (
+            <AlertCircle className="h-5 w-5 shrink-0 text-destructive" aria-hidden />
+          ) : (
+            <CheckCircle2 className="h-5 w-5 shrink-0 text-badge-success" aria-hidden />
+          )}
           <span className="flex-1">{t.message}</span>
           <button
             type="button"
