@@ -1,0 +1,61 @@
+/**
+ * circl. admin palette (source of truth for app/globals.css, which mirrors
+ * these as HSL). Sampled from brand/logo-v1.png: violet → magenta → red →
+ * orange → yellow. Contrast is enforced by lib/design/contrast.test.ts.
+ */
+export const TOKENS = {
+  light: {
+    background: "#F7F1F6",
+    card: "#FFFFFF",
+    muted: "#FAF6FA",
+    foreground: "#2E2A33",
+    mutedForeground: "#6F6676",
+    border: "#ECE3EC",
+    primary: "#6B2A8C",
+    primaryForeground: "#FFFFFF",
+    accent: "#F3E9F7",
+    destructive: "#C62828",
+    destructiveForeground: "#FFFFFF",
+    magenta: "#B5306E",
+    orange: "#F07A2A",
+    yellow: "#F2D45C",
+    sidebarFrom: "#4A1F66",
+    sidebarTo: "#6B2A8C",
+    sidebarForeground: "#FFFFFF",
+    badges: {
+      success: { fg: "#1E6B3A", bg: "#E3F4E8" },
+      pending: { fg: "#7A5A00", bg: "#FBF1CF" },
+      processing: { fg: "#1F5A96", bg: "#E2EEFA" },
+      error: { fg: "#A12A2A", bg: "#FBE4E4" },
+      neutral: { fg: "#555060", bg: "#EFEBF0" },
+      brand: { fg: "#5A2277", bg: "#F1E6F6" },
+    },
+  },
+  dark: {
+    background: "#17111C",
+    card: "#211A27",
+    muted: "#2A2231",
+    foreground: "#F3EEF5",
+    mutedForeground: "#B2A8B9",
+    border: "#352B3C",
+    primary: "#C9A2E2",
+    primaryForeground: "#1B1022",
+    accent: "#33263D",
+    destructive: "#F07272",
+    destructiveForeground: "#1B1022",
+    magenta: "#E06BA0",
+    orange: "#F59A5B",
+    yellow: "#F2D45C",
+    sidebarFrom: "#1E1426",
+    sidebarTo: "#2E1D3B",
+    sidebarForeground: "#F3EEF5",
+    badges: {
+      success: { fg: "#9BE0B0", bg: "#173323" },
+      pending: { fg: "#F2D77A", bg: "#3A2F12" },
+      processing: { fg: "#9CC8F2", bg: "#162C42" },
+      error: { fg: "#F5A3A3", bg: "#3D1C1F" },
+      neutral: { fg: "#CEC6D3", bg: "#2E2833" },
+      brand: { fg: "#D9B8EE", bg: "#35233F" },
+    },
+  },
+} as const;

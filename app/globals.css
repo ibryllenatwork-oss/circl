@@ -2,59 +2,89 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * circl. design tokens. Generated from lib/design/tokens.ts (hex → HSL);
+ * lib/design/css.test.ts fails if these drift. Edit tokens.ts, not here.
+ */
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    --background: 310 27.3% 95.7%;
+    --foreground: 267 9.7% 18.2%;
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    --card-foreground: 267 9.7% 18.2%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
+    --popover-foreground: 267 9.7% 18.2%;
+    --primary: 280 53.8% 35.7%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 300 28.6% 97.3%;
+    --secondary-foreground: 267 9.7% 18.2%;
+    --muted: 300 28.6% 97.3%;
+    --muted-foreground: 274 7.3% 43.1%;
+    --accent: 283 46.7% 94.1%;
+    --accent-foreground: 267 9.7% 18.2%;
+    --destructive: 0 66.4% 46.7%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 300 19.1% 90.8%;
+    --input: 300 19.1% 90.8%;
+    --ring: 280 53.8% 35.7%;
+    --brand-magenta: 332 58.1% 44.9%;
+    --brand-orange: 24 86.8% 55.3%;
+    --brand-yellow: 48 85.2% 65.5%;
+    --sidebar-from: 276 53.4% 26.1%;
+    --sidebar-to: 280 53.8% 35.7%;
+    --sidebar-foreground: 0 0% 100%;
+    --badge-success: 142 56.2% 26.9%;
+    --badge-success-bg: 138 43.6% 92.4%;
+    --badge-pending: 44 100% 23.9%;
+    --badge-pending-bg: 46 84.6% 89.8%;
+    --badge-processing: 210 65.7% 35.5%;
+    --badge-processing-bg: 210 70.6% 93.3%;
+    --badge-error: 0 58.6% 39.8%;
+    --badge-error-bg: 0 74.2% 93.9%;
+    --badge-neutral: 259 9.1% 34.5%;
+    --badge-neutral-bg: 288 14.3% 93.1%;
+    --badge-brand: 280 55.6% 30%;
+    --badge-brand-bg: 281 47.1% 93.3%;
+    --radius: 0.875rem;
   }
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --background: 273 24.4% 8.8%;
+    --foreground: 283 25.9% 94.7%;
+    --card: 272 20% 12.7%;
+    --card-foreground: 283 25.9% 94.7%;
+    --popover: 272 20% 12.7%;
+    --popover-foreground: 283 25.9% 94.7%;
+    --primary: 277 52.5% 76.1%;
+    --primary-foreground: 277 36% 9.8%;
+    --secondary: 272 18.1% 16.3%;
+    --secondary-foreground: 283 25.9% 94.7%;
+    --muted: 272 18.1% 16.3%;
+    --muted-foreground: 275 10.8% 69.2%;
+    --accent: 274 23.2% 19.4%;
+    --accent-foreground: 283 25.9% 94.7%;
+    --destructive: 0 80.8% 69.4%;
+    --destructive-foreground: 277 36% 9.8%;
+    --border: 275 16.5% 20.2%;
+    --input: 275 16.5% 20.2%;
+    --ring: 277 52.5% 76.1%;
+    --brand-magenta: 333 65.4% 64.9%;
+    --brand-orange: 25 88.5% 65.9%;
+    --brand-yellow: 48 85.2% 65.5%;
+    --sidebar-from: 273 31% 11.4%;
+    --sidebar-to: 274 34.1% 17.3%;
+    --sidebar-foreground: 283 25.9% 94.7%;
+    --badge-success: 138 52.7% 74.3%;
+    --badge-success-bg: 146 37.8% 14.5%;
+    --badge-pending: 47 82.2% 71.4%;
+    --badge-pending-bg: 44 52.6% 14.9%;
+    --badge-processing: 209 76.8% 78%;
+    --badge-processing-bg: 210 50% 17.3%;
+    --badge-error: 0 80.4% 80%;
+    --badge-error-bg: 355 37.1% 17.5%;
+    --badge-neutral: 277 12.9% 80.2%;
+    --badge-neutral-bg: 273 12.1% 17.8%;
+    --badge-brand: 277 61.4% 82.7%;
+    --badge-brand-bg: 279 28.6% 19.2%;
   }
 }
 
@@ -62,7 +92,24 @@
   * {
     @apply border-border;
   }
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "cv11", "ss01";
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}
+
+@layer utilities {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  .bg-sidebar {
+    background-image: linear-gradient(180deg, hsl(var(--sidebar-from)) 0%, hsl(var(--sidebar-to)) 100%);
   }
 }

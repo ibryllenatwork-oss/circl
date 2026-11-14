@@ -44,18 +44,41 @@ export default {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
-        chart: {
-          "1": "hsl(var(--chart-1))",
-          "2": "hsl(var(--chart-2))",
-          "3": "hsl(var(--chart-3))",
-          "4": "hsl(var(--chart-4))",
-          "5": "hsl(var(--chart-5))",
+        brand: {
+          magenta: "hsl(var(--brand-magenta))",
+          orange: "hsl(var(--brand-orange))",
+          yellow: "hsl(var(--brand-yellow))",
+        },
+        sidebar: {
+          foreground: "hsl(var(--sidebar-foreground))",
+        },
+        badge: {
+          success: "hsl(var(--badge-success))",
+          "success-bg": "hsl(var(--badge-success-bg))",
+          pending: "hsl(var(--badge-pending))",
+          "pending-bg": "hsl(var(--badge-pending-bg))",
+          processing: "hsl(var(--badge-processing))",
+          "processing-bg": "hsl(var(--badge-processing-bg))",
+          error: "hsl(var(--badge-error))",
+          "error-bg": "hsl(var(--badge-error-bg))",
+          neutral: "hsl(var(--badge-neutral))",
+          "neutral-bg": "hsl(var(--badge-neutral-bg))",
+          brand: "hsl(var(--badge-brand))",
+          "brand-bg": "hsl(var(--badge-brand-bg))",
         },
       },
+      fontFamily: {
+        sans: ["var(--font-inter)", "ui-sans-serif", "system-ui", "sans-serif"],
+      },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        xl: "var(--radius)", // 14px: cards, panels
+        lg: "0.625rem", // 10px: inputs, buttons
+        md: "0.5rem",
+        sm: "0.375rem",
+      },
+      boxShadow: {
+        card: "0 1px 2px hsl(267 10% 18% / 0.04), 0 4px 16px hsl(280 54% 36% / 0.06)",
+        pop: "0 8px 32px hsl(280 54% 20% / 0.14)",
       },
     },
   },
