@@ -47,6 +47,7 @@ async function EmployeeDetail({ params }: { params: Promise<{ id: string }> }) {
             </p>
             <div className="mt-2.5 flex flex-wrap items-center gap-2">
               <StatusBadge status={e.status} />
+              <Badge variant={e.employee_type === "admin" ? "brand" : "neutral"}>{label(e.employee_type)}</Badge>
               <Badge variant="neutral">{label(e.employment_type)}</Badge>
               {nbi ? (
                 <ExpiryBadge state={nbiState} date={`NBI ${formatDate(nbi)}`} />

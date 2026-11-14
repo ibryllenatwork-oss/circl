@@ -19,6 +19,13 @@ const DUPLICATE_EMAIL = "Another employee already uses this email.";
 
 function failure(err: unknown, values: Record<string, string>): FormState {
   if (err instanceof UnauthorizedError) return { ok: false, error: SESSION_EXPIRED_MESSAGE, values };
+  if ((err as { message?: string })?.message?.startsWith("assigned_va_to_admin")) {
+    return {
+      ok: false,
+      fieldErrors: { employee_type: "This VA is assigned to clients. Remove them from their clients before making them an admin." },
+      values,
+    };
+  }
   const field = uniqueViolationField(err as { code?: string; message?: string }, UNIQUE_FIELDS);
   if (field) return { ok: false, fieldErrors: { [field]: DUPLICATE_EMAIL }, values };
   console.error("employee action failed", err);

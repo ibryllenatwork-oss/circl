@@ -1,4 +1,7 @@
 export const EMPLOYMENT_TYPES = ["full_time", "part_time", "project_based"] as const;
+/** circl. internal team (admin) vs client-facing virtual assistants (va). */
+export const EMPLOYEE_TYPES = ["va", "admin"] as const;
+export type EmployeeType = (typeof EMPLOYEE_TYPES)[number];
 export const EMPLOYEE_STATUSES = ["active", "on_leave", "resigned", "terminated"] as const;
 export const SEXES = ["male", "female"] as const;
 export const CIVIL_STATUSES = ["single", "married", "widowed", "separated", "annulled"] as const;
@@ -23,6 +26,10 @@ export const EMPLOYEE_DOC_TYPES = [
 export type EmployeeStatus = (typeof EMPLOYEE_STATUSES)[number];
 
 export const LABELS: Record<string, string> = {
+  va: "Virtual Assistant",
+  admin: "Admin",
+  draft: "Draft",
+  archived: "Archived",
   full_time: "Full-time",
   part_time: "Part-time",
   project_based: "Project-based",

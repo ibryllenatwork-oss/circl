@@ -17,6 +17,7 @@ import {
   CIVIL_STATUSES,
   EDUCATION_LEVELS,
   EMPLOYEE_STATUSES,
+  EMPLOYEE_TYPES,
   EMPLOYMENT_TYPES,
   PAYOUT_SUGGESTIONS,
   POSITION_SUGGESTIONS,
@@ -29,7 +30,7 @@ import type { FormState } from "@/lib/validation/action";
 type Action = (prev: FormState | null, formData: FormData) => Promise<FormState>;
 
 function initialValues(e: Partial<EmployeeRow> | null): Record<string, string> {
-  if (!e) return { status: "active", nationality: "Filipino", timezone: "Asia/Manila", employment_type: "full_time" };
+  if (!e) return { status: "active", nationality: "Filipino", timezone: "Asia/Manila", employment_type: "full_time", employee_type: "va" };
   const out: Record<string, string> = {};
   for (const [k, v] of Object.entries(e)) {
     if (v == null) continue;
@@ -89,6 +90,14 @@ export function EmployeeForm({
       </FormSection>
 
       <FormSection title="Employment" description="Role, status, schedule and rate.">
+        <SelectField
+          label="Type"
+          required
+          allowBlank={false}
+          options={EMPLOYEE_TYPES}
+          hint="Admins are circl.'s own team and can't be assigned to clients."
+          {...field("employee_type")}
+        />
         <TextField label="Position" required list="position-options" {...field("position")} />
         <SelectField label="Employment type" required allowBlank={false} options={EMPLOYMENT_TYPES} {...field("employment_type")} />
         <SelectField label="Status" required allowBlank={false} options={EMPLOYEE_STATUSES} {...field("status")} />

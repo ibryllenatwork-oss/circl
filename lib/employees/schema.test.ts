@@ -73,6 +73,21 @@ describe("parseEmployeeForm", () => {
   });
 });
 
+describe("employee type", () => {
+  it("defaults to Virtual Assistant when not given", () => {
+    const r = parseEmployeeForm(form(valid));
+    expect(r.ok && r.data.employee_type).toBe("va");
+  });
+  it("accepts admin", () => {
+    const r = parseEmployeeForm(form({ ...valid, employee_type: "admin" }));
+    expect(r.ok && r.data.employee_type).toBe("admin");
+  });
+  it("rejects unknown types", () => {
+    const r = parseEmployeeForm(form({ ...valid, employee_type: "boss" }));
+    expect(!r.ok && r.fieldErrors.employee_type).toBeTruthy();
+  });
+});
+
 describe("isRehire", () => {
   it.each([
     ["resigned", "active", true],

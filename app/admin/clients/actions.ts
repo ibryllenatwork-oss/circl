@@ -81,12 +81,15 @@ export async function assignEmployee(clientId: string, employeeId: string): Prom
     return await withManager(async (db) => {
       const { data: emp, error: empError } = await db
         .from("employees")
-        .select("status")
+        .select("status, employee_type")
         .eq("id", employeeId)
         .maybeSingle();
       if (empError) throw empError;
       if (!emp || !["active", "on_leave"].includes(emp.status)) {
         return { ok: false, error: "Only active or on-leave VAs can be assigned." };
+      }
+      if (emp.employee_type !== "va") {
+        return { ok: false, error: "Admins can't be assigned to clients. Only virtual assistants can." };
       }
       const { error } = await db
         .from("client_assignments")

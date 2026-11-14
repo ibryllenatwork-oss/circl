@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { Plus, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { PageHeader, WithAside } from "@/components/admin/page-header";
 import { ListFilters, Pagination, asList } from "@/components/admin/list-controls";
 import { SortHeader, TableCard, td, th, withParams, type Params } from "@/components/admin/data-table";
@@ -40,7 +41,8 @@ async function EmployeePreview({ id, params }: { id: string; params: Params }) {
       href={`${BASE}/${e.id}`}
       closeHref={withParams(BASE, params, { view: undefined })}
     >
-      <PreviewRow label="Type">{label(e.employment_type)}</PreviewRow>
+      <PreviewRow label="Type">{label(e.employee_type)}</PreviewRow>
+      <PreviewRow label="Employment">{label(e.employment_type)}</PreviewRow>
       <PreviewRow label="Hired">{formatDate(e.date_hired)}</PreviewRow>
       <PreviewRow label="Schedule">{e.work_schedule}</PreviewRow>
       <PreviewRow label="Email">
@@ -61,8 +63,23 @@ async function EmployeesView({ searchParams }: { searchParams: SearchParams }) {
   const page = pageNumber(asList(params.page)[0]);
   const sort = parseSort({ sort: asList(params.sort)[0], dir: asList(params.dir)[0] }, EMPLOYEE_SORT);
   const view = asList(params.view)[0];
-  const { rows, total } = await listEmployees({ q, statuses, devOnly, page, order: sort.order });
-  const filtered = Boolean(q) || devOnly || asList(params.status).length > 0;
+  const rawType = asList(params.type)[0];
+  const type = rawType === "admin" || rawType === "va" ? rawType : undefined;
+  const { rows, total } = await listEmployees({ q, statuses, devOnly, page, order: sort.order, type });
+  const filtered = Boolean(q) || devOnly || asList(params.status).length > 0 || Boolean(type);
+  const typeChip = (value: "va" | "admin" | undefined, text: string) => (
+    <Link
+      href={withParams(BASE, params, { type: value, page: undefined, view: undefined })}
+      aria-current={type === value ? "true" : undefined}
+      className={
+        type === value
+          ? "rounded-md bg-card px-3 py-1.5 text-sm font-medium text-foreground shadow-sm"
+          : "rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground"
+      }
+    >
+      {text}
+    </Link>
+  );
   const sh = { current: sort, basePath: BASE, params };
 
   const table = (
@@ -135,6 +152,11 @@ async function EmployeesView({ searchParams }: { searchParams: SearchParams }) {
                             {e.last_name}, {e.first_name}
                             {e.nickname && <span className="font-normal text-muted-foreground"> ({e.nickname})</span>}
                           </Link>
+                          {e.employee_type === "admin" && (
+                            <Badge variant="brand" className="ml-2 px-2 py-0 text-[10px] uppercase tracking-wide">
+                              Admin
+                            </Badge>
+                          )}
                           {e.created_by === DEV_MANAGER.email && <span className="hidden sm:inline"><DevBadge /></span>}
                         </span>
                         <p className="truncate text-xs text-muted-foreground lg:hidden">
@@ -171,7 +193,16 @@ async function EmployeesView({ searchParams }: { searchParams: SearchParams }) {
     </Suspense>
   ) : null;
 
-  return <WithAside aside={aside}>{table}</WithAside>;
+  return (
+    <WithAside aside={aside}>
+      <nav aria-label="Employee type" className="mb-4 inline-flex rounded-lg bg-accent/70 p-1">
+        {typeChip(undefined, "All")}
+        {typeChip("va", "Virtual Assistants")}
+        {typeChip("admin", "Admins")}
+      </nav>
+      {table}
+    </WithAside>
+  );
 }
 
 export default function EmployeesPage({ searchParams }: { searchParams: SearchParams }) {

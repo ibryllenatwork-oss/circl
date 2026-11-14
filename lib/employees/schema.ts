@@ -24,6 +24,7 @@ import {
   CIVIL_STATUSES,
   EDUCATION_LEVELS,
   EMPLOYEE_STATUSES,
+  EMPLOYEE_TYPES,
   EMPLOYMENT_TYPES,
   RATE_BASES,
   SEXES,
@@ -53,6 +54,7 @@ export const employeeFormSchema = z
     pagibig_no: optionalPagIbig,
     tin: optionalTIN,
 
+    employee_type: z.preprocess((v) => (v === "" || v == null ? "va" : v), z.enum(EMPLOYEE_TYPES, { message: "Choose Admin or Virtual Assistant." })),
     position: requiredText("Position is required."),
     employment_type: requiredEnum(EMPLOYMENT_TYPES, "Choose an employment type."),
     status: requiredEnum(EMPLOYEE_STATUSES, "Choose a status."),

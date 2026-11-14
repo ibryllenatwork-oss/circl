@@ -2,7 +2,7 @@ import "server-only";
 import { withManager } from "@/lib/data/db";
 import { isUuid, searchTerm } from "@/lib/validation/action";
 import { DEV_MANAGER } from "@/lib/auth/dev-bypass";
-import { EMPLOYEE_STATUSES, type EmployeeStatus } from "./labels";
+import { EMPLOYEE_STATUSES, type EmployeeStatus, type EmployeeType } from "./labels";
 import { EMPLOYEE_SORT, parseSort, type OrderColumn } from "@/lib/admin/sort";
 import type { EmployeeInput } from "./schema";
 
@@ -47,7 +47,7 @@ export type EmployeeDetail = EmployeeRow & {
 
 export type EmployeeListItem = Pick<
   EmployeeRow,
-  "id" | "employee_no" | "first_name" | "last_name" | "nickname" | "position" | "status" | "date_hired" | "personal_email" | "created_by"
+  "id" | "employee_no" | "first_name" | "last_name" | "nickname" | "position" | "status" | "employee_type" | "date_hired" | "personal_email" | "created_by"
 > & { clients: { id: string; company_name: string }[] };
 
 export const DEFAULT_EMPLOYEE_STATUSES: EmployeeStatus[] = ["active", "on_leave"];
@@ -67,6 +67,8 @@ export async function listEmployees(opts: {
   statuses: EmployeeStatus[];
   devOnly?: boolean;
   page?: number;
+  /** admin | va; omit for both */
+  type?: EmployeeType;
   /** from parseSort(); defaults to newest hire first */
   order?: OrderColumn[];
 }): Promise<{ rows: EmployeeListItem[]; total: number }> {
@@ -75,7 +77,7 @@ export async function listEmployees(opts: {
     let query = db
       .from("employees")
       .select(
-        "id, employee_no, first_name, last_name, nickname, position, status, date_hired, personal_email, created_by, client_assignments(client:clients(id, company_name))",
+        "id, employee_no, first_name, last_name, nickname, position, status, employee_type, date_hired, personal_email, created_by, client_assignments(client:clients(id, company_name))",
         { count: "exact" },
       )
       .in("status", opts.statuses);
@@ -98,6 +100,7 @@ export async function listEmployees(opts: {
       );
     }
     if (opts.devOnly) query = query.eq("created_by", DEV_MANAGER.email);
+    if (opts.type) query = query.eq("employee_type", opts.type);
 
     const { data, error, count } = await query;
     // Page past the end (stale link, last row deleted): show an empty page, not an error.
@@ -156,6 +159,7 @@ export async function listAssignableEmployees(): Promise<
       .from("employees")
       .select("id, employee_no, first_name, last_name, position")
       .in("status", ["active", "on_leave"])
+      .eq("employee_type", "va")
       .order("last_name");
     if (error) throw error;
     return data ?? [];

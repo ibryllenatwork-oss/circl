@@ -101,6 +101,30 @@ describe("updateEmployee rehire", () => {
   });
 });
 
+describe("updateEmployee type change", () => {
+  beforeEach(() => {
+    calls.length = 0;
+    deleteError = null;
+    current = { status: "active", date_hired: "2025-01-06", date_separated: null };
+  });
+
+  it("explains why an assigned VA can't become an admin", async () => {
+    updateError = { code: "P0001", message: "assigned_va_to_admin: remove this VA from their clients before making them an admin" };
+    const fd = form({
+      first_name: "Ana",
+      last_name: "Cruz",
+      personal_email: "ana@example.com",
+      position: "VA",
+      employment_type: "full_time",
+      status: "active",
+      date_hired: "2025-01-06",
+      employee_type: "admin",
+    });
+    const result = await updateEmployee(ID, null, fd);
+    expect(result.fieldErrors?.employee_type).toMatch(/remove .* from their clients/i);
+  });
+});
+
 describe("deleteEmployee", () => {
   beforeEach(() => {
     calls.length = 0;
