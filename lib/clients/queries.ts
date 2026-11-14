@@ -3,6 +3,7 @@ import { withManager } from "@/lib/data/db";
 import { isUuid, searchTerm } from "@/lib/validation/action";
 import { DEV_MANAGER } from "@/lib/auth/dev-bypass";
 import { CLIENT_STATUSES } from "./labels";
+import { CLIENT_SORT, parseSort, type OrderColumn } from "@/lib/admin/sort";
 import type { ClientInput, ContactInput } from "./schema";
 
 export const CLIENT_PAGE_SIZE = 25;
@@ -60,6 +61,8 @@ export async function listClients(opts: {
   statuses: ClientStatus[];
   devOnly?: boolean;
   page?: number;
+  /** from parseSort(); defaults to company A–Z */
+  order?: OrderColumn[];
 }): Promise<{ rows: ClientListItem[]; total: number }> {
   return withManager(async (db) => {
     const page = Math.max(1, opts.page ?? 1);
@@ -78,9 +81,11 @@ export async function listClients(opts: {
       .select("id, company_name, status, contract_end, created_by, client_contacts(name, is_primary), client_assignments(employee_id)", {
         count: "exact",
       })
-      .in("status", opts.statuses)
-      .order("company_name")
-      .range((page - 1) * CLIENT_PAGE_SIZE, page * CLIENT_PAGE_SIZE - 1);
+      .in("status", opts.statuses);
+    for (const o of opts.order ?? parseSort({}, CLIENT_SORT).order) {
+      query = query.order(o.column, { ascending: o.ascending, nullsFirst: false });
+    }
+    query = query.range((page - 1) * CLIENT_PAGE_SIZE, page * CLIENT_PAGE_SIZE - 1);
 
     if (q) {
       const filters = [`company_name.ilike.%${q}%`];

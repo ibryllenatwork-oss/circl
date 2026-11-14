@@ -37,12 +37,15 @@ export function EmployeePhoto({ employeeId, url, name }: { employeeId: string; u
         onClick={() => input.current?.click()}
         disabled={busy}
         title={url ? "Change photo" : "Add photo"}
-        className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border bg-muted text-lg font-semibold text-muted-foreground"
+        aria-label={url ? `Change photo of ${name}` : `Add a photo of ${name}`}
+        className="group relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-primary to-brand-magenta text-xl font-semibold text-primary-foreground ring-4 ring-accent transition-opacity disabled:opacity-60"
       >
         {/* eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL */}
-        {url ? <img src={url} alt={name} className="h-full w-full object-cover" /> : initials}
+        {url ? <img src={url} alt="" className="h-full w-full object-cover" /> : initials}
+        <span className="absolute inset-0 flex items-center justify-center bg-black/45 text-[11px] font-medium text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+          {busy ? "Uploading…" : url ? "Change" : "Add photo"}
+        </span>
       </button>
-      <span className="text-[11px] text-muted-foreground">{busy ? "Uploading..." : url ? "Change photo" : "Add photo"}</span>
       <input
         ref={input}
         type="file"
@@ -53,7 +56,7 @@ export function EmployeePhoto({ employeeId, url, name }: { employeeId: string; u
           e.target.value = ""; // allow picking the same file again after an error
         }}
       />
-      {error && <span className="max-w-40 text-center text-xs text-red-500">{error}</span>}
+      {error && <span className="max-w-40 text-center text-xs font-medium text-destructive">{error}</span>}
     </div>
   );
 }

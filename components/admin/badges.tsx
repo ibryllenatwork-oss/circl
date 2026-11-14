@@ -16,7 +16,7 @@ export function DevBadge() {
     <Badge
       variant="outline"
       title="Created in dev mode"
-      className="ml-2 border-dashed px-1.5 py-0 text-[10px] font-semibold uppercase tracking-wide"
+      className="ml-2 whitespace-nowrap border-dashed px-1.5 py-0 text-[10px] font-semibold uppercase tracking-wide"
     >
       Dev
     </Badge>

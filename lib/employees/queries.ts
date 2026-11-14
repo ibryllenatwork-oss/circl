@@ -3,6 +3,7 @@ import { withManager } from "@/lib/data/db";
 import { isUuid, searchTerm } from "@/lib/validation/action";
 import { DEV_MANAGER } from "@/lib/auth/dev-bypass";
 import { EMPLOYEE_STATUSES, type EmployeeStatus } from "./labels";
+import { EMPLOYEE_SORT, parseSort, type OrderColumn } from "@/lib/admin/sort";
 import type { EmployeeInput } from "./schema";
 
 export const PAGE_SIZE = 25;
@@ -66,6 +67,8 @@ export async function listEmployees(opts: {
   statuses: EmployeeStatus[];
   devOnly?: boolean;
   page?: number;
+  /** from parseSort(); defaults to newest hire first */
+  order?: OrderColumn[];
 }): Promise<{ rows: EmployeeListItem[]; total: number }> {
   return withManager(async (db) => {
     const page = Math.max(1, opts.page ?? 1);
@@ -75,10 +78,11 @@ export async function listEmployees(opts: {
         "id, employee_no, first_name, last_name, nickname, position, status, date_hired, personal_email, created_by, client_assignments(client:clients(id, company_name))",
         { count: "exact" },
       )
-      .in("status", opts.statuses)
-      .order("date_hired", { ascending: false })
-      .order("seq", { ascending: false })
-      .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
+      .in("status", opts.statuses);
+    for (const o of opts.order ?? parseSort({}, EMPLOYEE_SORT).order) {
+      query = query.order(o.column, { ascending: o.ascending });
+    }
+    query = query.range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
 
     const q = searchTerm(opts.q);
     if (q) {

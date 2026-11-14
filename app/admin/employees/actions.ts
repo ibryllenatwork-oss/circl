@@ -45,7 +45,7 @@ export async function createEmployee(_prev: FormState | null, formData: FormData
     return failure(err, values);
   }
   revalidatePath("/admin/employees");
-  redirect(`/admin/employees/${id}`);
+  redirect(`/admin/employees/${id}?saved=1`);
 }
 
 export async function updateEmployee(
@@ -99,7 +99,7 @@ export async function updateEmployee(
   }
   revalidatePath("/admin/employees");
   revalidatePath(`/admin/employees/${id}`);
-  redirect(`/admin/employees/${id}`);
+  redirect(`/admin/employees/${id}?saved=1`);
 }
 
 export async function deleteEmployee(id: string, confirmText: string): Promise<FormState> {

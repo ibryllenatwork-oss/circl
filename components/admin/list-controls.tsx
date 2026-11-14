@@ -1,7 +1,11 @@
 import Link from "next/link";
+import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { LABELS } from "@/lib/employees/labels";
+import { fieldClass } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import { withParams, type Params } from "./data-table";
 
-/** Plain GET form: works without JavaScript and keeps filters in the URL. */
+/** Plain GET form: works without JavaScript and keeps filters (and sort) in the URL. */
 export function ListFilters({
   action,
   q,
@@ -9,6 +13,7 @@ export function ListFilters({
   selected,
   devOnly,
   placeholder,
+  sort,
 }: {
   action: string;
   q: string;
@@ -16,35 +21,42 @@ export function ListFilters({
   selected: string[];
   devOnly: boolean;
   placeholder: string;
+  sort?: { key: string; dir: string };
 }) {
+  const chip =
+    "inline-flex h-8 cursor-pointer select-none items-center rounded-full border border-border bg-card px-3 text-[13px] text-muted-foreground transition-colors hover:border-primary/40 has-[:checked]:border-primary/30 has-[:checked]:bg-accent has-[:checked]:font-medium has-[:checked]:text-primary has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring";
   return (
-    <form action={action} method="get" className="flex flex-wrap items-end gap-3">
-      <div className="flex min-w-56 flex-1 flex-col gap-1">
-        <label htmlFor="q" className="text-xs font-medium text-muted-foreground">
+    <form action={action} method="get" className="flex flex-col gap-3 lg:flex-row lg:items-center">
+      {sort && (
+        <>
+          <input type="hidden" name="sort" value={sort.key} />
+          <input type="hidden" name="dir" value={sort.dir} />
+        </>
+      )}
+      <div className="relative w-full lg:max-w-xs">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <label htmlFor="list-q" className="sr-only">
           Search
         </label>
-        <input
-          id="q"
-          name="q"
-          defaultValue={q}
-          placeholder={placeholder}
-          className="h-9 rounded-md border border-input bg-transparent px-3 text-sm"
-        />
+        <input id="list-q" name="q" type="search" defaultValue={q} placeholder={placeholder} className={cn(fieldClass, "h-9 pl-9")} />
       </div>
-      <fieldset className="flex flex-wrap items-center gap-3 text-sm">
+      <fieldset className="flex flex-wrap items-center gap-2">
         <legend className="sr-only">Status</legend>
         {statuses.map((s) => (
-          <label key={s} className="flex items-center gap-1.5">
-            <input type="checkbox" name="status" value={s} defaultChecked={selected.includes(s)} />
+          <label key={s} className={chip}>
+            <input type="checkbox" name="status" value={s} defaultChecked={selected.includes(s)} className="sr-only" />
             {LABELS[s] ?? s}
           </label>
         ))}
-        <label className="flex items-center gap-1.5 text-muted-foreground">
-          <input type="checkbox" name="dev" value="1" defaultChecked={devOnly} />
-          Created in dev mode
+        <label className={cn(chip, "border-dashed")}>
+          <input type="checkbox" name="dev" value="1" defaultChecked={devOnly} className="sr-only" />
+          Dev mode only
         </label>
       </fieldset>
-      <button type="submit" className="h-9 rounded-md border px-3 text-sm hover:bg-accent">
+      <button
+        type="submit"
+        className="h-9 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 lg:ml-auto"
+      >
         Apply
       </button>
     </form>
@@ -59,35 +71,35 @@ export function Pagination({
   pageSize,
 }: {
   basePath: string;
-  params: Record<string, string | string[] | undefined>;
+  params: Params;
   page: number;
   total: number;
   pageSize: number;
 }) {
   const pages = Math.max(1, Math.ceil(total / pageSize));
-  const href = (p: number) => {
-    const sp = new URLSearchParams();
-    for (const [k, v] of Object.entries(params)) {
-      if (k === "page" || v == null) continue;
-      for (const item of Array.isArray(v) ? v : [v]) sp.append(k, item);
-    }
-    if (p > 1) sp.set("page", String(p));
-    const qs = sp.toString();
-    return qs ? `${basePath}?${qs}` : basePath;
-  };
+  const from = total === 0 ? 0 : Math.min((page - 1) * pageSize + 1, total);
+  const to = Math.min(page * pageSize, total);
+  const btn =
+    "inline-flex h-8 items-center gap-1 rounded-lg border border-border bg-card px-2.5 text-[13px] font-medium transition-colors hover:bg-accent";
+  const off = "pointer-events-none opacity-40";
+  const href = (p: number) => withParams(basePath, params, { page: p > 1 ? String(p) : undefined, view: undefined });
   return (
-    <div className="flex items-center justify-between text-sm text-muted-foreground">
-      <span>
-        {total} {total === 1 ? "record" : "records"}
+    <div className="flex flex-wrap items-center justify-between gap-3 text-[13px] text-muted-foreground">
+      <span className="tabular">
+        {total === 0 ? "No records" : `Showing ${from}–${to} of ${total}`}
       </span>
       {pages > 1 && (
-        <div className="flex items-center gap-2">
-          {page > 1 ? <Link href={href(page - 1)} className="underline">Previous</Link> : <span>Previous</span>}
-          <span>
-            Page {page} of {pages}
+        <nav aria-label="Pagination" className="flex items-center gap-2">
+          <Link href={href(page - 1)} className={cn(btn, page <= 1 && off)} aria-disabled={page <= 1}>
+            <ChevronLeft className="h-4 w-4" /> Previous
+          </Link>
+          <span className="tabular px-1">
+            {page} / {pages}
           </span>
-          {page < pages ? <Link href={href(page + 1)} className="underline">Next</Link> : <span>Next</span>}
-        </div>
+          <Link href={href(page + 1)} className={cn(btn, page >= pages && off)} aria-disabled={page >= pages}>
+            Next <ChevronRight className="h-4 w-4" />
+          </Link>
+        </nav>
       )}
     </div>
   );

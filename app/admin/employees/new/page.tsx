@@ -1,16 +1,18 @@
 import { EmployeeForm } from "@/components/employees/employee-form";
+import { PageHeader } from "@/components/admin/page-header";
 import { createEmployee } from "../actions";
+
+export const metadata = { title: "Add employee" };
 
 export default function NewEmployeePage() {
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-bold">Add employee</h1>
-        <p className="text-sm text-muted-foreground">
-          Only fields marked * are required. You can add a photo and documents after saving.
-        </p>
-      </div>
+    <>
+      <PageHeader
+        eyebrow="Employees"
+        title="Add employee"
+        description="Only fields marked * are required. You can add a photo and documents after saving."
+      />
       <EmployeeForm action={createEmployee} employee={null} cancelHref="/admin/employees" submitLabel="Save employee" />
-    </div>
+    </>
   );
 }

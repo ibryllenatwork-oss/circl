@@ -2,9 +2,12 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
+import { useFocusFirstError } from "@/components/admin/use-focus-first-error";
 import { Button } from "@/components/ui/button";
 import {
   DataList,
+  FormActions,
+  FormAlert,
   FormSection,
   SelectField,
   TextAreaField,
@@ -53,20 +56,15 @@ export function EmployeeForm({
   const formKey = state ? JSON.stringify([state.values, state.fieldErrors, state.error]) : "initial";
   const field = (name: string) => ({ name, defaultValue: v[name], error: err[name] });
 
-  return (
-    <form key={formKey} action={formAction} className="flex flex-col gap-6" noValidate>
-      {state?.error && (
-        <p role="alert" className="rounded-md border border-red-300 p-3 text-sm text-red-600">
-          {state.error}
-        </p>
-      )}
-      {Object.keys(err).length > 0 && (
-        <p role="alert" className="text-sm text-red-600">
-          Please fix the highlighted fields.
-        </p>
-      )}
+  const formRef = useFocusFirstError(formKey);
 
-      <FormSection title="Personal">
+  return (
+    <form ref={formRef} key={formKey} action={formAction} className="flex flex-col gap-6" noValidate>
+      {state?.error && <FormAlert message={state.error} />}
+      {Object.keys(err).length > 0 && <FormAlert message="Please fix the highlighted fields below." />}
+
+      <FormSection title="Personal" description="Identity and contact details.">
+
         <TextField label="First name" required {...field("first_name")} />
         <TextField label="Middle name" {...field("middle_name")} />
         <TextField label="Last name" required {...field("last_name")} />
@@ -83,14 +81,14 @@ export function EmployeeForm({
         <TextAreaField label="Permanent address" rows={2} className="sm:col-span-2 lg:col-span-3" {...field("permanent_address")} />
       </FormSection>
 
-      <FormSection title="Government IDs">
+      <FormSection title="Government IDs" description="Formatted automatically; shown masked on the record.">
         <TextField label="SSS no." placeholder="34-1234567-8" {...field("sss_no")} />
         <TextField label="PhilHealth no." placeholder="12-345678901-2" {...field("philhealth_no")} />
         <TextField label="Pag-IBIG no." placeholder="1234-5678-9012" {...field("pagibig_no")} />
         <TextField label="TIN" placeholder="123-456-789" {...field("tin")} />
       </FormSection>
 
-      <FormSection title="Employment">
+      <FormSection title="Employment" description="Role, status, schedule and rate.">
         <TextField label="Position" required list="position-options" {...field("position")} />
         <SelectField label="Employment type" required allowBlank={false} options={EMPLOYMENT_TYPES} {...field("employment_type")} />
         <SelectField label="Status" required allowBlank={false} options={EMPLOYEE_STATUSES} {...field("status")} />
@@ -104,14 +102,14 @@ export function EmployeeForm({
         <DataList id="position-options" options={POSITION_SUGGESTIONS} />
       </FormSection>
 
-      <FormSection title="Payout">
+      <FormSection title="Payout" description="Where salary is sent.">
         <TextField label="Bank or e-wallet" list="payout-options" {...field("payout_method")} />
         <TextField label="Account name" {...field("payout_account_name")} />
         <TextField label="Account number" {...field("payout_account_no")} />
         <DataList id="payout-options" options={PAYOUT_SUGGESTIONS} />
       </FormSection>
 
-      <FormSection title="Emergency contact">
+      <FormSection title="Emergency contact" description="Who to call if something happens.">
         <TextField label="Name" {...field("emergency_name")} />
         <TextField label="Relationship" {...field("emergency_relationship")} />
         <TextField label="Mobile" placeholder="0917 123 4567" {...field("emergency_mobile")} />
@@ -123,18 +121,18 @@ export function EmployeeForm({
         <TextField label="Course" {...field("education_course")} />
       </FormSection>
 
-      <FormSection title="Notes">
+      <FormSection title="Notes" description="Private HR notes for managers.">
         <TextAreaField label="HR notes" rows={4} className="sm:col-span-2 lg:col-span-3" {...field("notes")} />
       </FormSection>
 
-      <div className="flex gap-2">
-        <Button type="submit" disabled={pending}>
-          {pending ? "Saving..." : submitLabel}
-        </Button>
-        <Button asChild variant="outline">
+      <FormActions>
+        <Button asChild variant="secondary">
           <Link href={cancelHref}>Cancel</Link>
         </Button>
-      </div>
+        <Button type="submit" disabled={pending}>
+          {pending ? "Saving…" : submitLabel}
+        </Button>
+      </FormActions>
     </form>
   );
 }

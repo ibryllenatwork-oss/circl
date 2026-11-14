@@ -1,8 +1,6 @@
 import { cn } from "@/lib/utils";
+import { fieldClass } from "@/components/ui/input";
 import { LABELS } from "@/lib/employees/labels";
-
-const control =
-  "flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:opacity-50";
 
 type Base = {
   name: string;
@@ -16,20 +14,27 @@ type Base = {
 function Wrapper({ name, label, error, required, hint, className, children }: Base & { children: React.ReactNode }) {
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
-      <label htmlFor={name} className="text-sm font-medium">
+      <label htmlFor={name} className="text-[13px] font-medium text-foreground">
         {label}
-        {required && <span className="text-red-500"> *</span>}
+        {required && (
+          <span className="text-destructive" aria-hidden>
+            {" "}
+            *
+          </span>
+        )}
       </label>
       {children}
       {hint && !error && <p className="text-xs text-muted-foreground">{hint}</p>}
       {error && (
-        <p id={`${name}-error`} className="text-xs text-red-500">
+        <p id={`${name}-error`} className="text-xs font-medium text-destructive">
           {error}
         </p>
       )}
     </div>
   );
 }
+
+const describedBy = (b: Base) => (b.error ? `${b.name}-error` : undefined);
 
 export function TextField({
   defaultValue,
@@ -48,10 +53,11 @@ export function TextField({
         placeholder={placeholder}
         list={list}
         required={base.required}
+        aria-required={base.required}
         aria-invalid={Boolean(base.error)}
-        aria-describedby={base.error ? `${base.name}-error` : undefined}
+        aria-describedby={describedBy(base)}
         step={type === "number" ? "0.01" : undefined}
-        className={cn(control, "h-9 py-1", base.error && "border-red-500")}
+        className={cn(fieldClass, "h-9 py-1")}
       />
     </Wrapper>
   );
@@ -70,10 +76,12 @@ export function SelectField({
         name={base.name}
         defaultValue={defaultValue ?? ""}
         required={base.required}
+        aria-required={base.required}
         aria-invalid={Boolean(base.error)}
-        className={cn(control, "h-9 py-1", base.error && "border-red-500")}
+        aria-describedby={describedBy(base)}
+        className={cn(fieldClass, "h-9 py-1")}
       >
-        {allowBlank && <option value="">—</option>}
+        {allowBlank && <option value="">Select…</option>}
         {options.map((o) => (
           <option key={o} value={o}>
             {LABELS[o] ?? o}
@@ -93,17 +101,25 @@ export function TextAreaField({ defaultValue, rows = 3, ...base }: Base & { defa
         rows={rows}
         defaultValue={defaultValue ?? ""}
         aria-invalid={Boolean(base.error)}
-        className={cn(control, base.error && "border-red-500")}
+        aria-describedby={describedBy(base)}
+        className={cn(fieldClass, "py-2")}
       />
     </Wrapper>
   );
 }
 
-export function FormSection({ title, children }: { title: string; children: React.ReactNode }) {
+/** A form section rendered as a white card with a title and optional description. */
+export function FormSection({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
   return (
-    <fieldset className="grid gap-4 rounded-lg border p-4 sm:grid-cols-2 lg:grid-cols-3">
-      <legend className="px-1 text-sm font-semibold">{title}</legend>
-      {children}
+    <fieldset className="rounded-xl border border-border/70 bg-card p-5 shadow-card dark:border-border dark:shadow-none sm:p-6">
+      <legend className="sr-only">{title}</legend>
+      <div className="mb-5">
+        <h2 className="text-[15px] font-semibold tracking-tight" aria-hidden>
+          {title}
+        </h2>
+        {description && <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>}
+      </div>
+      <div className="grid gap-x-5 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">{children}</div>
     </fieldset>
   );
 }
@@ -115,5 +131,23 @@ export function DataList({ id, options }: { id: string; options: string[] }) {
         <option key={o} value={o} />
       ))}
     </datalist>
+  );
+}
+
+/** Sticky bottom bar for form actions. */
+export function FormActions({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="sticky bottom-0 z-20 -mx-4 flex items-center justify-end gap-2 border-t border-border/70 bg-background/90 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+      {children}
+    </div>
+  );
+}
+
+/** Error summary shown above a form after a failed save. */
+export function FormAlert({ message }: { message: string }) {
+  return (
+    <div role="alert" className="rounded-xl border border-destructive/30 bg-badge-error-bg px-4 py-3 text-sm font-medium text-badge-error">
+      {message}
+    </div>
   );
 }

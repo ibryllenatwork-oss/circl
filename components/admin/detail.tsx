@@ -1,8 +1,28 @@
-export function DetailSection({ title, children }: { title: string; children: React.ReactNode }) {
+import { cn } from "@/lib/utils";
+
+export function DetailSection({
+  title,
+  children,
+  action,
+  className,
+}: {
+  title: string;
+  children: React.ReactNode;
+  action?: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <section className="rounded-lg border p-4">
-      <h2 className="mb-3 text-sm font-semibold">{title}</h2>
-      <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">{children}</dl>
+    <section
+      className={cn(
+        "rounded-xl border border-border/70 bg-card p-5 shadow-card dark:border-border dark:shadow-none sm:p-6",
+        className,
+      )}
+    >
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h2 className="text-[15px] font-semibold tracking-tight">{title}</h2>
+        {action}
+      </div>
+      <dl className="grid gap-x-6 gap-y-4 sm:grid-cols-2">{children}</dl>
     </section>
   );
 }
@@ -10,9 +30,11 @@ export function DetailSection({ title, children }: { title: string; children: Re
 export function Item({ label, children, wide }: { label: string; children: React.ReactNode; wide?: boolean }) {
   const empty = children == null || children === "" || (Array.isArray(children) && children.length === 0);
   return (
-    <div className={wide ? "sm:col-span-2 lg:col-span-3" : undefined}>
-      <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd className="mt-0.5 whitespace-pre-line break-words text-sm">{empty ? "—" : children}</dd>
+    <div className={wide ? "sm:col-span-2" : undefined}>
+      <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
+      <dd className={cn("mt-1 whitespace-pre-line break-words text-sm", empty && "text-muted-foreground/70")}>
+        {empty ? "—" : children}
+      </dd>
     </div>
   );
 }

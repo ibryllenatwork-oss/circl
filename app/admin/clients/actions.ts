@@ -46,7 +46,7 @@ export async function saveClient(id: string | null, _prev: FormState | null, for
   }
   revalidatePath("/admin/clients");
   revalidatePath(`/admin/clients/${savedId}`);
-  redirect(`/admin/clients/${savedId}`);
+  redirect(`/admin/clients/${savedId}?saved=1`);
 }
 
 export async function deleteClient(id: string, confirmText: string): Promise<FormState> {

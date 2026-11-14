@@ -3,7 +3,10 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { DataList, FormSection, SelectField, TextAreaField, TextField } from "@/components/admin/form-fields";
+import { DataList, FormActions, FormAlert, FormSection, SelectField, TextAreaField, TextField } from "@/components/admin/form-fields";
+import { useFocusFirstError } from "@/components/admin/use-focus-first-error";
+import { fieldClass } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import {
   BILLING_CYCLES,
   CLIENT_STATUSES,
@@ -61,24 +64,28 @@ function ContactsEditor({ initial, error }: { initial: Contact[]; error?: string
   const makePrimary = (i: number) => setContacts((list) => list.map((c, j) => ({ ...c, is_primary: j === i })));
 
   return (
-    <fieldset className="flex flex-col gap-3 rounded-lg border p-4">
-      <legend className="px-1 text-sm font-semibold">
-        Contacts <span className="text-red-500">*</span>
-      </legend>
+    <fieldset className="flex flex-col gap-3 rounded-xl border border-border/70 bg-card p-5 shadow-card dark:border-border dark:shadow-none sm:p-6">
+      <legend className="sr-only">Contacts</legend>
+      <div className="mb-2">
+        <h2 className="text-[15px] font-semibold tracking-tight" aria-hidden>
+          Contacts <span className="text-destructive">*</span>
+        </h2>
+        <p className="mt-0.5 text-sm text-muted-foreground">People you work with at this company. Mark one as primary.</p>
+      </div>
       <input type="hidden" name="contacts" value={JSON.stringify(contacts)} />
       {contacts.map((c, i) => (
-        <div key={i} className="grid gap-2 rounded-md border p-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_1fr_auto]">
-          <input aria-label={`Contact ${i + 1} name`} placeholder="Name *" value={c.name} onChange={(e) => update(i, { name: e.target.value })} className="h-9 rounded-md border bg-transparent px-3 text-sm" />
-          <input aria-label={`Contact ${i + 1} role`} placeholder="Role, e.g. CEO" value={c.role} onChange={(e) => update(i, { role: e.target.value })} className="h-9 rounded-md border bg-transparent px-3 text-sm" />
-          <input aria-label={`Contact ${i + 1} email`} type="email" placeholder="Email" value={c.email} onChange={(e) => update(i, { email: e.target.value })} className="h-9 rounded-md border bg-transparent px-3 text-sm" />
-          <input aria-label={`Contact ${i + 1} phone`} placeholder="Phone / WhatsApp" value={c.phone} onChange={(e) => update(i, { phone: e.target.value })} className="h-9 rounded-md border bg-transparent px-3 text-sm" />
+        <div key={i} className="grid gap-2 rounded-lg border border-border/70 bg-muted/40 p-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_1fr_auto]">
+          <input aria-label={`Contact ${i + 1} name`} placeholder="Name *" value={c.name} onChange={(e) => update(i, { name: e.target.value })} className={cn(fieldClass, "h-9")} />
+          <input aria-label={`Contact ${i + 1} role`} placeholder="Role, e.g. CEO" value={c.role} onChange={(e) => update(i, { role: e.target.value })} className={cn(fieldClass, "h-9")} />
+          <input aria-label={`Contact ${i + 1} email`} type="email" placeholder="Email" value={c.email} onChange={(e) => update(i, { email: e.target.value })} className={cn(fieldClass, "h-9")} />
+          <input aria-label={`Contact ${i + 1} phone`} placeholder="Phone / WhatsApp" value={c.phone} onChange={(e) => update(i, { phone: e.target.value })} className={cn(fieldClass, "h-9")} />
           <div className="flex items-center gap-3 text-sm">
             <label className="flex items-center gap-1.5 whitespace-nowrap">
               <input type="radio" name="primary-contact" checked={c.is_primary} onChange={() => makePrimary(i)} />
               Primary
             </label>
             {contacts.length > 1 && (
-              <button type="button" onClick={() => setContacts((l) => l.filter((_, j) => j !== i))} className="text-xs text-red-600 underline">
+              <button type="button" onClick={() => setContacts((l) => l.filter((_, j) => j !== i))} className="text-xs font-medium text-destructive hover:underline">
                 Remove
               </button>
             )}
@@ -90,7 +97,7 @@ function ContactsEditor({ initial, error }: { initial: Contact[]; error?: string
           Add contact
         </Button>
       </div>
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && <p className="text-xs font-medium text-destructive">{error}</p>}
     </fieldset>
   );
 }
@@ -111,13 +118,14 @@ export function ClientForm({
   const err = state?.fieldErrors ?? {};
   const formKey = state ? JSON.stringify([state.values, state.fieldErrors, state.error]) : "initial";
   const field = (name: string) => ({ name, defaultValue: v[name], error: err[name] });
+  const formRef = useFocusFirstError(formKey);
 
   return (
-    <form key={formKey} action={formAction} className="flex flex-col gap-6" noValidate>
-      {state?.error && <p role="alert" className="rounded-md border border-red-300 p-3 text-sm text-red-600">{state.error}</p>}
-      {Object.keys(err).length > 0 && <p role="alert" className="text-sm text-red-600">Please fix the highlighted fields.</p>}
+    <form ref={formRef} key={formKey} action={formAction} className="flex flex-col gap-6" noValidate>
+      {state?.error && <FormAlert message={state.error} />}
+      {Object.keys(err).length > 0 && <FormAlert message="Please fix the highlighted fields below." />}
 
-      <FormSection title="Company">
+      <FormSection title="Company" description="Who the client is and where they are.">
         <TextField label="Company name" required {...field("company_name")} />
         <TextField label="Industry" {...field("industry")} />
         <TextField label="Website" placeholder="acme.com" {...field("website")} />
@@ -129,7 +137,7 @@ export function ClientForm({
 
       <ContactsEditor initial={initialContacts(client, state?.values)} error={err.contacts} />
 
-      <FormSection title="Billing">
+      <FormSection title="Billing" description="How and how much circl. bills this client.">
         <TextField label="Billing email" type="email" {...field("billing_email")} />
         <SelectField label="Currency" required allowBlank={false} options={CURRENCIES} {...field("currency")} />
         <TextField label="Agreed rate" type="number" {...field("rate")} />
@@ -140,7 +148,7 @@ export function ClientForm({
         <DataList id="payment-options" options={PAYMENT_SUGGESTIONS} />
       </FormSection>
 
-      <FormSection title="Engagement">
+      <FormSection title="Engagement" description="Services, hours and contract dates.">
         <TextField label="Services" list="service-options" className="sm:col-span-2" hint="Separate with commas." {...field("services")} />
         <TextField label="Hours per week" type="number" {...field("hours_per_week")} />
         <TextField label="Contract start" type="date" {...field("contract_start")} />
@@ -152,10 +160,10 @@ export function ClientForm({
         <TextAreaField label="Notes" rows={4} className="sm:col-span-2 lg:col-span-3" {...field("notes")} />
       </FormSection>
 
-      <div className="flex gap-2">
-        <Button type="submit" disabled={pending}>{pending ? "Saving..." : submitLabel}</Button>
-        <Button asChild variant="outline"><Link href={cancelHref}>Cancel</Link></Button>
-      </div>
+      <FormActions>
+        <Button asChild variant="secondary"><Link href={cancelHref}>Cancel</Link></Button>
+        <Button type="submit" disabled={pending}>{pending ? "Saving…" : submitLabel}</Button>
+      </FormActions>
     </form>
   );
 }
