@@ -1,4 +1,5 @@
 import "server-only";
+import { connection } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { isSuperadmin, parseSuperadminEmails } from "@/lib/auth/roles";
 import { authBypassEnabled, DEV_MANAGER } from "@/lib/auth/dev-bypass";
@@ -15,7 +16,12 @@ export function superadminEmails(): string[] {
  * Every signed-in user is management (no public sign-up).
  */
 export async function requireManager(): Promise<Manager | null> {
-  if (authBypassEnabled()) return { ...DEV_MANAGER };
+  if (authBypassEnabled()) {
+    // Real sign-ins read cookies, which marks the render as request-time. Do the same
+    // in dev mode so time-based code (greeting, today's date) behaves identically.
+    await connection();
+    return { ...DEV_MANAGER };
+  }
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getUser();
