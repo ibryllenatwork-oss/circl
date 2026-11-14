@@ -87,15 +87,20 @@ async function ClientsView({ searchParams }: { searchParams: SearchParams }) {
       {rows.length === 0 ? (
         <EmptyState
           icon={Building2}
-          title={filtered ? "No clients match your filters" : "No clients yet"}
-          description={filtered ? "Try a different search or status." : "Add your first client to start assigning VAs."}
+          title={total > 0 ? "This page is past the end of the list" : filtered ? "No clients match your filters" : "No clients yet"}
+          description={total > 0 ? "Go back to the first page." : filtered ? "Try a different search or status." : "Add your first client to start assigning VAs."}
           action={
+            total > 0 ? (
+              <Button asChild size="sm" variant="secondary">
+                <Link href={withParams(BASE, params, { page: undefined, view: undefined })}>First page</Link>
+              </Button>
+            ) : (
             <Button asChild size="sm">
               <Link href={`${BASE}/new`}>
                 <Plus /> Add client
               </Link>
             </Button>
-          }
+          )}
         />
       ) : (
         <table className="w-full">

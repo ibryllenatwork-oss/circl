@@ -77,28 +77,35 @@ export function Pagination({
   pageSize: number;
 }) {
   const pages = Math.max(1, Math.ceil(total / pageSize));
-  const from = total === 0 ? 0 : Math.min((page - 1) * pageSize + 1, total);
+  const pastEnd = total > 0 && page > pages;
+  const from = Math.min((page - 1) * pageSize + 1, total);
   const to = Math.min(page * pageSize, total);
+  const summary = total === 0 ? "No records" : pastEnd ? `Showing 0 of ${total}` : `Showing ${from}–${to} of ${total}`;
   const btn =
     "inline-flex h-8 items-center gap-1 rounded-lg border border-border bg-card px-2.5 text-[13px] font-medium transition-colors hover:bg-accent";
-  const off = "pointer-events-none opacity-40";
+  const off = "cursor-not-allowed opacity-40 hover:bg-card";
   const href = (p: number) => withParams(basePath, params, { page: p > 1 ? String(p) : undefined, view: undefined });
+  // Disabled steps are plain text, so neither mouse nor keyboard can follow them.
+  const step = (enabled: boolean, target: number, children: React.ReactNode) =>
+    enabled ? (
+      <Link href={href(target)} className={btn}>
+        {children}
+      </Link>
+    ) : (
+      <span className={cn(btn, off)} aria-disabled="true">
+        {children}
+      </span>
+    );
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 text-[13px] text-muted-foreground">
-      <span className="tabular">
-        {total === 0 ? "No records" : `Showing ${from}–${to} of ${total}`}
-      </span>
-      {pages > 1 && (
+      <span className="tabular">{summary}</span>
+      {(pages > 1 || pastEnd) && (
         <nav aria-label="Pagination" className="flex items-center gap-2">
-          <Link href={href(page - 1)} className={cn(btn, page <= 1 && off)} aria-disabled={page <= 1}>
-            <ChevronLeft className="h-4 w-4" /> Previous
-          </Link>
+          {step(page > 1, Math.min(page - 1, pages), [<ChevronLeft key="i" className="h-4 w-4" />, "Previous"])}
           <span className="tabular px-1">
-            {page} / {pages}
+            {Math.min(page, pages)} / {pages}
           </span>
-          <Link href={href(page + 1)} className={cn(btn, page >= pages && off)} aria-disabled={page >= pages}>
-            Next <ChevronRight className="h-4 w-4" />
-          </Link>
+          {step(page < pages, page + 1, ["Next", <ChevronRight key="i" className="h-4 w-4" />])}
         </nav>
       )}
     </div>

@@ -83,15 +83,20 @@ async function EmployeesView({ searchParams }: { searchParams: SearchParams }) {
       {rows.length === 0 ? (
         <EmptyState
           icon={Users}
-          title={filtered ? "No employees match your filters" : "No employees yet"}
-          description={filtered ? "Try a different search or status." : "Add your first VA's 201 file to get started."}
+          title={total > 0 ? "This page is past the end of the list" : filtered ? "No employees match your filters" : "No employees yet"}
+          description={total > 0 ? "Go back to the first page." : filtered ? "Try a different search or status." : "Add your first VA's 201 file to get started."}
           action={
+            total > 0 ? (
+              <Button asChild size="sm" variant="secondary">
+                <Link href={withParams(BASE, params, { page: undefined, view: undefined })}>First page</Link>
+              </Button>
+            ) : (
             <Button asChild size="sm">
               <Link href={`${BASE}/new`}>
                 <Plus /> Add employee
               </Link>
             </Button>
-          }
+          )}
         />
       ) : (
         <table className="w-full">

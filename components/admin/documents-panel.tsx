@@ -79,7 +79,14 @@ function UploadDialog({ owner, ownerId, docTypes }: { owner: Owner; ownerId: str
   };
 
   return (
-    <Dialog open={open} onOpenChange={(o) => (setOpen(o), o || reset())}>
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        if (busy) return; // keep the dialog open while an upload is running
+        if (o) reset();
+        setOpen(o);
+      }}
+    >
       <DialogTrigger asChild>
         <Button size="sm" variant="secondary">
           <Upload /> Upload

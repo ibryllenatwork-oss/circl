@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { CheckCircle2, X } from "lucide-react";
 
@@ -30,11 +30,15 @@ export function Toaster() {
   }, []);
 
   return (
-    <div className="pointer-events-none fixed bottom-4 right-4 z-[60] flex w-[min(360px,calc(100vw-2rem))] flex-col gap-2">
+    // One persistent live region: screen readers announce messages added inside it.
+    <div
+      role="status"
+      aria-live="polite"
+      className="pointer-events-none fixed bottom-4 right-4 z-[60] flex w-[min(360px,calc(100vw-2rem))] flex-col gap-2"
+    >
       {items.map((t) => (
         <div
           key={t.id}
-          role="status"
           className="pointer-events-auto flex items-center gap-3 rounded-xl border bg-card px-4 py-3 text-sm shadow-pop animate-in fade-in-0 slide-in-from-bottom-2"
         >
           <CheckCircle2 className="h-5 w-5 shrink-0 text-badge-success" aria-hidden />
@@ -59,9 +63,15 @@ export function SavedToast({ message = "Changes saved." }: { message?: string })
   const router = useRouter();
   const pathname = usePathname();
   const saved = params.get("saved") === "1";
+  const shown = useRef(false);
 
   useEffect(() => {
-    if (!saved) return;
+    if (!saved) {
+      shown.current = false;
+      return;
+    }
+    if (shown.current) return; // StrictMode runs effects twice in dev
+    shown.current = true;
     toast(message);
     const next = new URLSearchParams(params.toString());
     next.delete("saved");

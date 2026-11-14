@@ -56,7 +56,7 @@ export function EmployeePhoto({ employeeId, url, name }: { employeeId: string; u
           e.target.value = ""; // allow picking the same file again after an error
         }}
       />
-      {error && <span className="max-w-40 text-center text-xs font-medium text-destructive">{error}</span>}
+      {error && <span role="alert" className="max-w-40 text-center text-xs font-medium text-destructive">{error}</span>}
     </div>
   );
 }
