@@ -12,7 +12,7 @@ import { TableCard, td, th } from "@/components/admin/data-table";
 import { TableSkeleton } from "@/components/admin/skeletons";
 import { InviteForm } from "@/components/admin/invite-form";
 import { RemoveButton } from "@/components/admin/remove-button";
-import { initialsOf } from "@/components/admin/user-menu";
+import { initialsOf } from "@/lib/format";
 
 export const metadata = { title: "Users" };
 
@@ -81,8 +81,8 @@ async function ManagerTable() {
               const email = u.email ?? "";
               return (
                 <tr key={u.id} className="border-t border-border/60 text-sm first:border-t-0">
-                  <td className={td}>
-                    <div className="flex items-center gap-3">
+                  <td className={`${td} w-full max-w-0`}>
+                    <div className="flex min-w-0 items-center gap-3">
                       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-badge-brand-bg text-xs font-semibold text-badge-brand">
                         {initialsOf(email)}
                       </span>
@@ -93,13 +93,17 @@ async function ManagerTable() {
                         </p>
                         <p className="text-xs text-muted-foreground md:hidden">Invited {formatDateTime(u.invited_at ?? u.created_at)}</p>
                       </div>
-                      {superadmin && <Badge variant="brand">Superadmin</Badge>}
+                      {superadmin && (
+                        <Badge variant="brand" className="hidden sm:inline-flex">
+                          Superadmin
+                        </Badge>
+                      )}
                     </div>
                   </td>
                   <td className={`${td} hidden whitespace-nowrap text-muted-foreground md:table-cell`}>
                     {formatDateTime(u.invited_at ?? u.created_at)}
                   </td>
-                  <td className={`${td} whitespace-nowrap`}>
+                  <td className={`${td} sm:whitespace-nowrap`}>
                     {u.last_sign_in_at ? (
                       <span className="text-muted-foreground">{formatDateTime(u.last_sign_in_at)}</span>
                     ) : (

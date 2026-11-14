@@ -33,7 +33,7 @@ function ResultCard({
 }) {
   return (
     <Card>
-      <CardHeader className="flex-row items-center justify-between gap-2 space-y-0 pb-3">
+      <CardHeader className="flex-row flex-wrap items-center justify-between gap-2 space-y-0 pb-3">
         <CardTitle className="flex items-center gap-2">
           <Icon className="h-4 w-4 text-primary" aria-hidden /> {title}
           <span className="tabular text-sm font-normal text-muted-foreground">({total})</span>
@@ -77,7 +77,7 @@ async function Results({ searchParams }: { searchParams: Promise<Record<string, 
 
   const row = "flex items-center gap-3 rounded-lg px-2 py-2.5 transition-colors hover:bg-accent";
   return (
-    <div className="grid gap-6 xl:grid-cols-2">
+    <div className="grid gap-6 xl:grid-cols-2 [&>*]:min-w-0">
       <ResultCard title="Employees" icon={Users} total={emps.total} seeAll={all("/admin/employees", EMPLOYEE_STATUSES)}>
         {emps.rows.length === 0 ? (
           <p className="py-4 text-sm text-muted-foreground">No employees match.</p>

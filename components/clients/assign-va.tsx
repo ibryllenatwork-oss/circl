@@ -77,7 +77,7 @@ export function AssignedVAs({ clientId, vas, options }: { clientId: string; vas:
         <label htmlFor="assign-va" className="sr-only">
           VA to assign
         </label>
-        <select id="assign-va" value={pick} onChange={(e) => setPick(e.target.value)} className={cn(fieldClass, "h-9 flex-1")}>
+        <select id="assign-va" value={pick} onChange={(e) => setPick(e.target.value)} className={cn(fieldClass, "h-9 min-w-0 flex-1")}>
           <option value="">{available.length ? "Choose an active VA…" : "No more active VAs to assign"}</option>
           {available.map((o) => (
             <option key={o.id} value={o.id}>

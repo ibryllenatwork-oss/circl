@@ -12,7 +12,7 @@ vi.mock("next/headers", () => ({
   cookies: async () => ({ get: () => (cookieValue ? { value: cookieValue } : undefined) }),
 }));
 vi.mock("@/lib/auth/require-manager", () => ({ requireManager: () => requireManager() }));
-vi.mock("./app-sidebar", () => ({ AppSidebar: () => null, SIDEBAR_COOKIE: "sidebar_state" }));
+vi.mock("./app-sidebar", () => ({ AppSidebar: () => null }));
 vi.mock("./admin-header", () => ({ AdminHeader: () => null }));
 
 import { AdminShell } from "./admin-shell";

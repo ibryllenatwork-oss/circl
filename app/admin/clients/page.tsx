@@ -124,14 +124,16 @@ async function ClientsView({ searchParams }: { searchParams: SearchParams }) {
                 selected={view === c.id}
                 label={c.company_name}
               >
-                <td className={td}>
-                  <div className="flex items-center gap-3">
-                    <Initials name={c.company_name} />
-                    <div className="min-w-0">
-                      <Link href={`${BASE}/${c.id}`} className="font-medium text-foreground hover:text-primary">
-                        {c.company_name}
-                      </Link>
-                      {c.created_by === DEV_MANAGER.email && <DevBadge />}
+                <td className={`${td} w-full max-w-0`}>
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className="hidden sm:contents"><Initials name={c.company_name} /></span>
+                    <div className="flex min-w-0 flex-col">
+                      <span className="flex min-w-0 items-center">
+                        <Link href={`${BASE}/${c.id}`} className="truncate font-medium text-foreground hover:text-primary">
+                          {c.company_name}
+                        </Link>
+                        {c.created_by === DEV_MANAGER.email && <span className="hidden sm:inline"><DevBadge /></span>}
+                      </span>
                       <p className="truncate text-xs text-muted-foreground md:hidden">{c.primary_contact ?? "No contact"}</p>
                     </div>
                   </div>

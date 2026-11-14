@@ -6,8 +6,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { BrandMark } from "./brand-mark";
 import { NavLinks } from "./nav-links";
 import { cn } from "@/lib/utils";
+import { SIDEBAR_COOKIE } from "@/lib/admin/nav";
 
-export const SIDEBAR_COOKIE = "sidebar_state";
+
 
 /** Fixed desktop sidebar (≥ lg). Collapse state is kept in a cookie so the server renders the right width. */
 export function AppSidebar({

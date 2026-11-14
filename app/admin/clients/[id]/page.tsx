@@ -58,7 +58,7 @@ async function ClientDetail({ params }: { params: Promise<{ id: string }> }) {
         </div>
       </Card>
 
-      <div className="grid gap-6 xl:grid-cols-2">
+      <div className="grid gap-6 xl:grid-cols-2 [&>*]:min-w-0">
         <section className="rounded-xl border border-border/70 bg-card p-5 shadow-card dark:border-border dark:shadow-none sm:p-6">
           <h2 className="mb-4 text-[15px] font-semibold tracking-tight">Contacts</h2>
           <ul className="flex flex-col divide-y divide-border/70">
@@ -77,8 +77,8 @@ async function ClientDetail({ params }: { params: Promise<{ id: string }> }) {
                   {p.role && <p className="text-xs text-muted-foreground">{p.role}</p>}
                   <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-[13px]">
                     {p.email && (
-                      <a href={`mailto:${p.email}`} className="inline-flex items-center gap-1 text-primary hover:underline">
-                        <Mail className="h-3.5 w-3.5" /> {p.email}
+                      <a href={`mailto:${p.email}`} className="inline-flex min-w-0 items-center gap-1 break-all text-primary hover:underline">
+                        <Mail className="h-3.5 w-3.5 shrink-0" /> {p.email}
                       </a>
                     )}
                     {p.phone && (

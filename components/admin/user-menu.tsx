@@ -14,12 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { createClient } from "@/lib/supabase/client";
-
-export function initialsOf(email: string): string {
-  const name = email.split("@")[0].replace(/[^a-zA-Z]+/g, " ").trim();
-  const parts = name.split(" ").filter(Boolean);
-  return ((parts[0]?.[0] ?? "?") + (parts[1]?.[0] ?? "")).toUpperCase();
-}
+import { initialsOf } from "@/lib/format";
 
 export function UserMenu({ email, role, devMode }: { email: string; role: string; devMode: boolean }) {
   const router = useRouter();

@@ -66,7 +66,7 @@ async function EmployeeDetail({ params }: { params: Promise<{ id: string }> }) {
         </div>
       </Card>
 
-      <div className="grid gap-6 xl:grid-cols-2">
+      <div className="grid gap-6 xl:grid-cols-2 [&>*]:min-w-0">
         <DetailSection title="Personal">
           <Item label="Birth date">{e.birth_date ? formatDate(e.birth_date) : null}</Item>
           <Item label="Sex">{e.sex ? label(e.sex) : null}</Item>

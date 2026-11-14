@@ -121,15 +121,17 @@ async function EmployeesView({ searchParams }: { searchParams: SearchParams }) {
                   selected={view === e.id}
                   label={name}
                 >
-                  <td className={td}>
-                    <div className="flex items-center gap-3">
-                      <Initials name={name} />
-                      <div className="min-w-0">
-                        <Link href={`${BASE}/${e.id}`} className="whitespace-nowrap font-medium text-foreground hover:text-primary">
-                          {e.last_name}, {e.first_name}
-                        </Link>
-                        {e.nickname && <span className="text-muted-foreground"> ({e.nickname})</span>}
-                        {e.created_by === DEV_MANAGER.email && <DevBadge />}
+                  <td className={`${td} w-full max-w-0`}>
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className="hidden sm:contents"><Initials name={name} /></span>
+                      <div className="flex min-w-0 flex-col">
+                        <span className="flex min-w-0 items-center">
+                          <Link href={`${BASE}/${e.id}`} className="truncate font-medium text-foreground hover:text-primary">
+                            {e.last_name}, {e.first_name}
+                            {e.nickname && <span className="font-normal text-muted-foreground"> ({e.nickname})</span>}
+                          </Link>
+                          {e.created_by === DEV_MANAGER.email && <span className="hidden sm:inline"><DevBadge /></span>}
+                        </span>
                         <p className="truncate text-xs text-muted-foreground lg:hidden">
                           {e.position}
                           <span className="md:hidden"> · {e.employee_no}</span>

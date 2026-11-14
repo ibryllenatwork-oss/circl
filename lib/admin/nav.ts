@@ -27,3 +27,6 @@ export function isNavActive(pathname: string, href: string): boolean {
 export function visibleNav(isSuperadmin: boolean): AdminNavItem[] {
   return ADMIN_NAV.filter((item) => isSuperadmin || !item.superadminOnly);
 }
+
+/** Cookie that remembers a collapsed sidebar (read on the server, written by the sidebar). */
+export const SIDEBAR_COOKIE = "sidebar_state";

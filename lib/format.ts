@@ -74,3 +74,10 @@ export function formatBytes(n: number | null | undefined): string {
   if (n < 1024 * 1024) return `${Math.max(1, Math.round(n / 1024))} KB`;
   return `${(n / 1024 / 1024).toFixed(1)} MB`;
 }
+
+/** "ana.cruz@x.com" → "AC" (for avatars). */
+export function initialsOf(email: string): string {
+  const name = email.split("@")[0].replace(/[^a-zA-Z]+/g, " ").trim();
+  const parts = name.split(" ").filter(Boolean);
+  return ((parts[0]?.[0] ?? "?") + (parts[1]?.[0] ?? "")).toUpperCase();
+}
